@@ -48,10 +48,3 @@ async def client(db_session: AsyncSession):
         yield ac
 
     app.dependency_overrides.clear()
-
-
-@pytest.fixture(scope="function")
-async def app_lifespan():
-    """Handle app lifespan for testing."""
-    async with app.router.lifespan_context(app):
-        yield

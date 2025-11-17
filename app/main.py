@@ -27,17 +27,14 @@ logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     """Application lifespan events."""
-    # Startup
     logger.info("Starting up application...")
     yield
-    # Shutdown
     logger.info("Shutting down application...")
     try:
         await engine.dispose()
     except (asyncio.CancelledError, KeyboardInterrupt):
-        # Graceful shutdown - cleanup already handled
         logger.debug("Shutdown cancelled during cleanup")
     except Exception as e:
         logger.error(f"Error during shutdown: {e}")
@@ -116,7 +113,7 @@ app.add_middleware(StructuredLoggingMiddleware)
 # Exception handlers
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(
-    request: Request, exc: RequestValidationError
+    _request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     """Handle validation errors."""
     return JSONResponse(
@@ -131,7 +128,7 @@ async def validation_exception_handler(
 
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(
-    request: Request, exc: StarletteHTTPException
+    _request: Request, exc: StarletteHTTPException
 ) -> JSONResponse:
     """Handle HTTP exceptions."""
     return JSONResponse(
@@ -144,7 +141,7 @@ async def http_exception_handler(
 
 
 @app.exception_handler(Exception)
-async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+async def general_exception_handler(_request: Request, exc: Exception) -> JSONResponse:
     """Handle general exceptions."""
     logger.error(f"Unhandled exception: {exc}", exc_info=True)
     return JSONResponse(
