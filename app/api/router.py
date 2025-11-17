@@ -6,6 +6,7 @@ from app.api.routers import (
     auth_router,
     catalog_router,
     chats_router,
+    complaints_router,
     links_router,
     main_router,
     orders_router,
@@ -25,3 +26,4 @@ def register_routers(app: FastAPI) -> None:
     app.include_router(catalog_router, prefix=settings.API_V1_PREFIX)
     app.include_router(orders_router, prefix=settings.API_V1_PREFIX)
     app.include_router(chats_router, prefix=settings.API_V1_PREFIX)
+    app.include_router(complaints_router, prefix=settings.API_V1_PREFIX)
