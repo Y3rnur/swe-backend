@@ -9,6 +9,7 @@ from app.api.routers import (
     complaints_router,
     links_router,
     main_router,
+    notifications_router,
     orders_router,
     products_router,
     users_router,
@@ -27,3 +28,4 @@ def register_routers(app: FastAPI) -> None:
     app.include_router(orders_router, prefix=settings.API_V1_PREFIX)
     app.include_router(chats_router, prefix=settings.API_V1_PREFIX)
     app.include_router(complaints_router, prefix=settings.API_V1_PREFIX)
+    app.include_router(notifications_router, prefix=settings.API_V1_PREFIX)

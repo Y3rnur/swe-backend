@@ -27,7 +27,7 @@ class Notification(Base):
         Boolean, default=False, nullable=False, index=True
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
 
     recipient: Mapped[User] = relationship("User", back_populates="notifications")
