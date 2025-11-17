@@ -1,10 +1,8 @@
 """Common Pydantic schemas."""
 
-from typing import Any, Generic, TypeVar
+from typing import Any
 
 from pydantic import BaseModel
-
-T = TypeVar("T")
 
 
 class HealthCheckResponse(BaseModel):
@@ -28,7 +26,7 @@ class ErrorResponse(BaseModel):
     meta: dict[str, Any] | None = None
 
 
-class PaginationResponse(BaseModel, Generic[T]):
+class PaginationResponse[T](BaseModel):
     """Pagination response schema."""
 
     items: list[T]

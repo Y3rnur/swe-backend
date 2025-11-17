@@ -7,6 +7,7 @@ class Role(str, enum.Enum):
     """User roles for role-based access control."""
 
     ADMIN = "admin"
-    SUPPLIER = "supplier"
     CONSUMER = "consumer"
-    MANAGER = "manager"
+    SUPPLIER_OWNER = "supplier_owner"
+    SUPPLIER_MANAGER = "supplier_manager"
+    SUPPLIER_SALES = "supplier_sales"

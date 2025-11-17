@@ -1,6 +1,9 @@
+[project]
+requires-python = ">=3.13.5"
+
 [tool.ruff]
 # Python version
-target-version = "py311"
+target-version = "py313"
 line-length = 88
 exclude = [
     ".git",
@@ -53,7 +56,7 @@ line-ending = "auto"
 
 [tool.mypy]
 # Python version
-python_version = "3.11"
+python_version = "3.13"
 
 # Strictness level
 warn_return_any = true
@@ -95,6 +98,7 @@ module = [
     "app.core.security",
     "app.api.deps",
     "app.api.helpers",
+    "app.api.routers.*",
 ]
 warn_return_any = false
 
@@ -125,6 +129,7 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 asyncio_mode = "auto"
 addopts = ["-v", "--strict-markers", "--tb=short"]
+pythonpath = ["."]
 
 [tool.pytest.ini_options.markers]
 unit = "Unit tests"

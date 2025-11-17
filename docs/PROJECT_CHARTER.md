@@ -4,7 +4,7 @@
 
 **Backend Framework:**
 
-- Python 3.11+
+- Python 3.13.5+
 - FastAPI
 - Uvicorn (ASGI server)
 
@@ -26,6 +26,16 @@
 - Ruff (linter & formatter)
 - mypy (static type checking)
 - pre-commit (Git hooks)
+
+## Roles
+
+The system defines the following user roles:
+
+- `consumer`: End users who purchase products
+- `supplier_owner`: Owners of supplier businesses
+- `supplier_manager`: Managers within supplier organizations
+- `supplier_sales`: Sales representatives for suppliers
+- `admin`: System administrators
 
 ## API Versioning
 

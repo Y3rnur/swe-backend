@@ -1,11 +1,8 @@
 """Pagination utilities."""
 
 from math import ceil
-from typing import TypeVar
 
 from app.schemas.common import PaginationResponse
-
-T = TypeVar("T")
 
 
 def calculate_pages(total: int, size: int) -> int:
@@ -13,7 +10,7 @@ def calculate_pages(total: int, size: int) -> int:
     return ceil(total / size) if size > 0 else 0
 
 
-def create_pagination_response(
+def create_pagination_response[T](
     items: list[T], page: int, size: int, total: int
 ) -> PaginationResponse[T]:
     """Create a pagination response."""

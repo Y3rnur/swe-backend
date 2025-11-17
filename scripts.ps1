@@ -47,7 +47,8 @@ switch ($Command) {
     }
     "check" {
         Write-Host "Running all checks..." -ForegroundColor Green
-        ruff check .
+        ruff format .
+        ruff check --fix .
         mypy .
         pytest
     }
@@ -136,4 +137,3 @@ switch ($Command) {
         Write-Host "  .\scripts.ps1 docker-shell  - Open shell in Docker container" -ForegroundColor Cyan
     }
 }
-

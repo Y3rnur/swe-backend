@@ -1,0 +1,97 @@
+"""Catalog routes for consumers."""
+
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.deps import get_current_user
+from app.api.helpers import get_consumer_by_user_id
+from app.core.constants import ErrorMessages
+from app.core.roles import Role
+from app.db.session import get_db
+from app.models.link import Link, LinkStatus
+from app.models.product import Product
+from app.models.supplier import Supplier
+from app.models.user import User
+from app.schemas.product import ProductResponse
+from app.utils.pagination import create_pagination_response
+
+router = APIRouter(prefix="/catalog", tags=["catalog"])
+
+
+@router.get("", response_model=dict)  # Will be PaginationResponse[ProductResponse]
+async def get_catalog(
+    current_user: Annotated[User, Depends(get_current_user)],
+    supplier_id: int = Query(..., description="Supplier ID"),
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(20, ge=1, le=100, description="Page size"),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Get catalog for a supplier (consumer only, requires accepted link)."""
+    # Check user is consumer
+    if current_user.role != Role.CONSUMER.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=ErrorMessages.NOT_ENOUGH_PERMISSIONS,
+        )
+
+    # Get consumer
+    consumer = await get_consumer_by_user_id(current_user.id, db)
+    if not consumer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Consumer profile not found",
+        )
+
+    # Check if supplier exists
+    result = await db.execute(select(Supplier).where(Supplier.id == supplier_id))
+    supplier = result.scalar_one_or_none()
+    if not supplier:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Supplier not found",
+        )
+
+    # Check if link exists and is accepted
+    result = await db.execute(
+        select(Link).where(
+            Link.consumer_id == consumer.id,
+            Link.supplier_id == supplier_id,
+            Link.status == LinkStatus.ACCEPTED,
+        )
+    )
+    link = result.scalar_one_or_none()
+    if not link:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have an accepted link with this supplier",
+        )
+
+    # Get active products for this supplier
+    query = select(Product).where(
+        Product.supplier_id == supplier_id,
+        Product.is_active == True,  # noqa: E712
+    )
+
+    # Get total count
+    count_query = select(func.count(Product.id)).where(
+        Product.supplier_id == supplier_id,
+        Product.is_active == True,  # noqa: E712
+    )
+    count_result = await db.execute(count_query)
+    total = count_result.scalar_one() or 0
+
+    # Get paginated results
+    query = (
+        query.order_by(Product.created_at.desc()).offset((page - 1) * size).limit(size)
+    )
+    result = await db.execute(query)
+    products = result.scalars().all()
+
+    # Create response
+    product_responses = [
+        ProductResponse.model_validate(product) for product in products
+    ]
+    return create_pagination_response(product_responses, page, size, total).model_dump()

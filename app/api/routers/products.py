@@ -1,0 +1,246 @@
+"""Product management routes."""
+
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.deps import get_current_user
+from app.api.helpers import (
+    get_supplier_by_user_id,
+    is_supplier_owner_or_manager,
+)
+from app.core.constants import ErrorMessages
+from app.core.roles import Role
+from app.db.session import get_db
+from app.models.product import Product
+from app.models.user import User
+from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
+from app.utils.pagination import create_pagination_response
+
+router = APIRouter(prefix="/products", tags=["products"])
+
+
+async def _get_supplier_id_for_user(user: User, db: AsyncSession) -> int | None:
+    """Get supplier ID for user (owner or manager)."""
+    # Check if user is supplier owner
+    supplier = await get_supplier_by_user_id(user.id, db)
+    if supplier:
+        return supplier.id
+
+    # Check if user is supplier manager via SupplierStaff
+    from app.models.supplier_staff import SupplierStaff
+
+    result = await db.execute(
+        select(SupplierStaff).where(
+            SupplierStaff.user_id == user.id,
+            SupplierStaff.staff_role.in_(["manager", "owner"]),
+        )
+    )
+    staff = result.scalar_one_or_none()
+    if staff:
+        return staff.supplier_id
+
+    return None
+
+
+@router.post("", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+async def create_product(
+    product_data: ProductCreate,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: AsyncSession = Depends(get_db),
+) -> ProductResponse:
+    """Create a product (supplier owner/manager only)."""
+    # Check user is supplier owner or manager
+    if current_user.role not in (
+        Role.SUPPLIER_OWNER.value,
+        Role.SUPPLIER_MANAGER.value,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=ErrorMessages.NOT_ENOUGH_PERMISSIONS,
+        )
+
+    # Get supplier ID for user
+    supplier_id = await _get_supplier_id_for_user(current_user, db)
+    if not supplier_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Supplier profile not found",
+        )
+
+    # Check if SKU already exists for this supplier
+    result = await db.execute(
+        select(Product).where(
+            Product.supplier_id == supplier_id,
+            Product.sku == product_data.sku,
+        )
+    )
+    existing_product = result.scalar_one_or_none()
+    if existing_product:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Product with this SKU already exists",
+        )
+
+    # Create product
+    product = Product(
+        supplier_id=supplier_id,
+        name=product_data.name,
+        description=product_data.description,
+        price_kzt=product_data.price_kzt,
+        currency=product_data.currency,
+        sku=product_data.sku,
+        stock_qty=product_data.stock_qty,
+        is_active=product_data.is_active,
+    )
+    db.add(product)
+    await db.commit()
+    await db.refresh(product)
+
+    return ProductResponse.model_validate(product)
+
+
+@router.put("/{product_id}", response_model=ProductResponse)
+async def update_product(
+    product_id: int,
+    product_data: ProductUpdate,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: AsyncSession = Depends(get_db),
+) -> ProductResponse:
+    """Update a product (supplier owner/manager only)."""
+    # Check user is supplier owner or manager
+    if current_user.role not in (
+        Role.SUPPLIER_OWNER.value,
+        Role.SUPPLIER_MANAGER.value,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=ErrorMessages.NOT_ENOUGH_PERMISSIONS,
+        )
+
+    # Get product
+    result = await db.execute(select(Product).where(Product.id == product_id))
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found",
+        )
+
+    # Check user has permission for this supplier
+    has_permission = await is_supplier_owner_or_manager(
+        current_user, product.supplier_id, db
+    )
+    if not has_permission:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to manage this supplier's products",
+        )
+
+    # Check SKU uniqueness if SKU is being updated
+    if product_data.sku and product_data.sku != product.sku:
+        result = await db.execute(
+            select(Product).where(
+                Product.supplier_id == product.supplier_id,
+                Product.sku == product_data.sku,
+                Product.id != product_id,
+            )
+        )
+        existing_product = result.scalar_one_or_none()
+        if existing_product:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Product with this SKU already exists",
+            )
+
+    # Update product fields
+    update_data = product_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(product, field, value)
+
+    await db.commit()
+    await db.refresh(product)
+
+    return ProductResponse.model_validate(product)
+
+
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product(
+    product_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    """Delete a product (supplier owner/manager only)."""
+    # Check user is supplier owner or manager
+    if current_user.role not in (
+        Role.SUPPLIER_OWNER.value,
+        Role.SUPPLIER_MANAGER.value,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=ErrorMessages.NOT_ENOUGH_PERMISSIONS,
+        )
+
+    # Get product
+    result = await db.execute(select(Product).where(Product.id == product_id))
+    product = result.scalar_one_or_none()
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found",
+        )
+
+    # Check user has permission for this supplier
+    has_permission = await is_supplier_owner_or_manager(
+        current_user, product.supplier_id, db
+    )
+    if not has_permission:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to manage this supplier's products",
+        )
+
+    # Delete product
+    await db.delete(product)
+    await db.commit()
+
+
+@router.get("", response_model=dict)  # Will be PaginationResponse[ProductResponse]
+async def get_products(
+    supplier_id: int | None = Query(None, description="Filter by supplier ID"),
+    page: int = Query(1, ge=1, description="Page number"),
+    size: int = Query(20, ge=1, le=100, description="Page size"),
+    is_active: bool | None = Query(None, description="Filter by active status"),
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    """Get products with optional supplier filter."""
+    # Build query
+    query = select(Product)
+    if supplier_id:
+        query = query.where(Product.supplier_id == supplier_id)
+    if is_active is not None:
+        query = query.where(Product.is_active == is_active)
+
+    # Get total count
+    count_query = select(func.count(Product.id))
+    if supplier_id:
+        count_query = count_query.where(Product.supplier_id == supplier_id)
+    if is_active is not None:
+        count_query = count_query.where(Product.is_active == is_active)
+    count_result = await db.execute(count_query)
+    total = count_result.scalar_one() or 0
+
+    # Get paginated results
+    query = (
+        query.order_by(Product.created_at.desc()).offset((page - 1) * size).limit(size)
+    )
+    result = await db.execute(query)
+    products = result.scalars().all()
+
+    # Create response
+    product_responses = [
+        ProductResponse.model_validate(product) for product in products
+    ]
+    return create_pagination_response(product_responses, page, size, total).model_dump()

@@ -27,7 +27,7 @@ class Consumer(Base):
     )
     organization_name: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
 
     user: Mapped[User] = relationship("User", back_populates="consumer")

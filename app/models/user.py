@@ -31,7 +31,7 @@ class User(Base):
     role: Mapped[str] = mapped_column(String(50), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
 
     supplier: Mapped[Supplier | None] = relationship(

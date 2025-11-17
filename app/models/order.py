@@ -45,7 +45,7 @@ class Order(Base):
     )
     total_kzt: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
 
     supplier: Mapped[Supplier] = relationship("Supplier", back_populates="orders")

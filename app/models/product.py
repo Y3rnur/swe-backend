@@ -31,7 +31,7 @@ class Product(Base):
     stock_qty: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
 
     supplier: Mapped[Supplier] = relationship("Supplier", back_populates="products")
