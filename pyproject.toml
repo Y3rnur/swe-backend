@@ -1,90 +1,190 @@
+# ==============================================================================
+# pyproject.toml - Project Configuration
+# ==============================================================================
+# This file configures various tools used in the project:
+# - Ruff: Linter and code formatter
+# - Mypy: Static type checker
+# - Pytest: Testing framework
+#
+# For more information, see:
+# - Ruff: https://docs.astral.sh/ruff/
+# - Mypy: https://mypy.readthedocs.io/
+# - Pytest: https://docs.pytest.org/
+# ==============================================================================
+
+[build-system]
+# Build system configuration (PEP 517/518)
+# Specifies the build backend and requirements
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
+# Project metadata (PEP 621)
+name = "swe-backend"
+version = "1.0.0"
+description = "B2B Supplier-Wholesale Exchange Platform Backend"
+readme = "README.md"
 requires-python = ">=3.13.5"
+# Note: Dependencies are managed in requirements.txt
+# This is intentional to keep the setup simple
+# If you want to migrate to pyproject.toml dependencies, use:
+# dependencies = ["fastapi>=0.121.2", "uvicorn[standard]>=0.38.0", ...]
+
+# ==============================================================================
+# Ruff Configuration
+# ==============================================================================
+# Ruff is a fast Python linter and formatter written in Rust
+# Documentation: https://docs.astral.sh/ruff/
 
 [tool.ruff]
-# Python version
+# Python version to target
 target-version = "py313"
+
+# Maximum line length (Black's default)
 line-length = 88
-exclude = [
-    ".git",
-    ".venv",
-    "__pycache__",
-    "dist",
-    "build",
-    ".eggs",
-    "*.egg",
-    "alembic/versions",
-    ".pytest_cache",
-    ".mypy_cache",
-    ".ruff_cache",
-]
+
+# Note: File exclusions are handled by .ruffignore
+
+# ==============================================================================
+# Ruff Linting Rules
+# ==============================================================================
 
 [tool.ruff.lint]
-# Enable commonly used rules
+# Enable rule sets
+# See: https://docs.astral.sh/ruff/rules/
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort (import sorting)
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
-    "ARG", # flake8-unused-arguments
-    "SIM", # flake8-simplify
+    "E",    # pycodestyle errors (PEP 8 violations)
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes (logical errors, unused imports)
+    "I",    # isort (import sorting)
+    "B",    # flake8-bugbear (common bugs and design problems)
+    "C4",   # flake8-comprehensions (better comprehensions)
+    "UP",   # pyupgrade (modernize Python syntax)
+    "ARG",  # flake8-unused-arguments
+    "SIM",  # flake8-simplify (code simplifications)
+    "RUF",  # Ruff-specific rules
+    "PIE",  # flake8-pie (miscellaneous linter checks)
+    "PT",   # flake8-pytest-style (pytest best practices)
+    "RET",  # flake8-return (return statement best practices)
+    "TCH",  # flake8-type-checking (type checking imports)
 ]
+
+# Rules to ignore globally
 ignore = [
-    "E501",  # line too long (handled by formatter)
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
+    "E501",  # Line too long (handled by formatter)
+    "B008",  # Do not perform function calls in argument defaults
+    "C901",  # Too complex (McCabe complexity)
+    "B904",  # Allow `raise` without specifying exception in `except` blocks
 ]
 
+# Import sorting configuration
 [tool.ruff.lint.isort]
+# Known first-party modules (for import sorting)
 known-first-party = ["app"]
+# Force imports to be sorted by module, independent of import type
+split-on-trailing-comma = true
+# Combine imports from the same module
+combine-as-imports = true
 
+# Per-file rule overrides
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
-"tests/*" = ["ARG", "S101"]  # Allow unused arguments and use of assert in tests
-"alembic/versions/*" = ["E501"]  # Allow long lines in migration files
+# Allow unused imports in __init__.py files (common for public API)
+"__init__.py" = ["F401"]  # Unused import
+# Test files: allow unused arguments and assert statements
+"tests/*" = ["ARG", "S101"]  # Unused arguments, use of assert
+# Migration files: allow long lines (auto-generated)
+"alembic/versions/*" = ["E501"]  # Line too long
+
+# ==============================================================================
+# Ruff Formatting Configuration
+# ==============================================================================
 
 [tool.ruff.format]
-# Use double quotes for strings
+# Quote style for strings
+# Options: "double" (default), "single"
 quote-style = "double"
+
 # Respect magic trailing comma
+# When enabled, Ruff will respect trailing commas in function signatures
 skip-magic-trailing-comma = false
-# Automatically detect the appropriate line ending
+
+# Line ending style
+# Options: "auto" (detect from file), "lf", "crlf"
 line-ending = "auto"
 
+# Indentation style
+# Options: "space", "tab"
+indent-style = "space"
+
+# ==============================================================================
+# Mypy Configuration
+# ==============================================================================
+# Mypy is a static type checker for Python
+# Documentation: https://mypy.readthedocs.io/
+
 [tool.mypy]
-# Python version
+# Python version to type check against
 python_version = "3.13"
 
-# Strictness level
+# ==============================================================================
+# Mypy Strictness Settings
+# ==============================================================================
+# These settings control how strict mypy is when type checking
+
+# Warn about returning Any from functions
 warn_return_any = true
+
+# Warn about unused type ignores and configs
 warn_unused_configs = true
-disallow_untyped_defs = false  # Allow gradual typing
-disallow_incomplete_defs = false
-check_untyped_defs = true
-disallow_untyped_decorators = false
-no_implicit_optional = true
-warn_redundant_casts = true
 warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
 
-# Platform settings
-platform = "win32"  # Can be changed to "linux" or "darwin" if needed
+# Type checking strictness
+# Set to false to allow gradual typing (recommended for existing codebases)
+disallow_untyped_defs = false  # Allow functions without type annotations
+disallow_incomplete_defs = false  # Allow incomplete type annotations
+check_untyped_defs = true  # Type check untyped function definitions
+disallow_untyped_decorators = false  # Allow decorators without type annotations
 
-# Show error codes
+# Optional type handling
+no_implicit_optional = true  # Require explicit Optional for None defaults
+
+# Equality checking
+strict_equality = true  # Require type equality for == and != comparisons
+
+# Cast and return warnings
+warn_redundant_casts = true  # Warn about unnecessary casts
+warn_no_return = true  # Warn about functions without return statements
+warn_unreachable = true  # Warn about unreachable code
+
+# ==============================================================================
+# Mypy Platform and Display Settings
+# ==============================================================================
+
+# Platform to type check for
+# Options: "win32", "linux", "darwin" (macOS)
+# Change this based on your deployment target
+platform = "win32"
+
+# Show error codes in output
 show_error_codes = true
 
-# Follow imports
+# How to follow imports
+# Options: "normal", "silent", "skip"
 follow_imports = "normal"
+
+# Enable namespace packages
 namespace_packages = true
 
 # Ignore missing imports for third-party libraries
+# Set to true if you want to ignore missing stubs for third-party packages
 ignore_missing_imports = false
 
-# Per-module options
+# ==============================================================================
+# Mypy Per-Module Overrides
+# ==============================================================================
+# These overrides allow different type checking rules for specific modules
+
+# Alembic migrations: ignore all errors (auto-generated code)
 [[tool.mypy.overrides]]
 module = [
     "alembic.*",
@@ -92,6 +192,7 @@ module = [
 ]
 ignore_errors = true
 
+# Router modules: disable warn_return_any (FastAPI dependency injection)
 [[tool.mypy.overrides]]
 module = [
     "app.utils.hashing",
@@ -102,6 +203,7 @@ module = [
 ]
 warn_return_any = false
 
+# Test files: allow untyped definitions (tests don't need strict typing)
 [[tool.mypy.overrides]]
 module = [
     "tests.*",
@@ -109,10 +211,12 @@ module = [
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
 
+# SQLAlchemy: ignore missing imports (type stubs may be incomplete)
 [[tool.mypy.overrides]]
 module = "sqlalchemy.*"
 ignore_missing_imports = true
 
+# Third-party libraries without type stubs
 [[tool.mypy.overrides]]
 module = [
     "dotenv.*",
@@ -122,16 +226,53 @@ module = [
 ]
 ignore_missing_imports = true
 
+# ==============================================================================
+# Pytest Configuration
+# ==============================================================================
+# Pytest is the testing framework used in this project
+# Documentation: https://docs.pytest.org/
+
 [tool.pytest.ini_options]
+# Directories to search for test files
 testpaths = ["tests"]
-python_files = ["test_*.py"]
+
+# Test file patterns
+python_files = ["test_*.py", "*_test.py"]
+
+# Test class patterns
 python_classes = ["Test*"]
+
+# Test function patterns
 python_functions = ["test_*"]
+
+# Async test mode
+# Options: "auto", "strict", "legacy"
+# "auto" automatically detects async tests
 asyncio_mode = "auto"
-addopts = ["-v", "--strict-markers", "--tb=short"]
+
+# Additional command-line options
+# -v: verbose output
+# --strict-markers: require markers to be registered
+# --tb=short: shorter traceback format
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+]
+
+# Python path (for imports)
 pythonpath = ["."]
 
+# Minimum Python version
+minversion = "9.0"
+
+# ==============================================================================
+# Pytest Markers
+# ==============================================================================
+# Markers allow categorizing tests (e.g., unit, integration, slow)
+# Usage: @pytest.mark.unit, @pytest.mark.integration, @pytest.mark.slow
+
 [tool.pytest.ini_options.markers]
-unit = "Unit tests"
-integration = "Integration tests"
-slow = "Slow running tests"
+unit = "Unit tests (fast, isolated)"
+integration = "Integration tests (may require database)"
+slow = "Slow running tests (may take longer to execute)"

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import enum
 from datetime import UTC, datetime
-from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Numeric
@@ -11,6 +10,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from decimal import Decimal
+
     from app.models.chat_session import ChatSession
     from app.models.complaint import Complaint
     from app.models.consumer import Consumer

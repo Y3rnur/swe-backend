@@ -1,58 +1,142 @@
+# .dockerignore - Excludes files from Docker build context
+# Only production code and necessary files should be included
+
 # Git
 .git
 .gitignore
+.gitattributes
+.gitkeep
 
 # Python
-__pycache__
+__pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-*.egg-info
-.eggs
+*.egg-info/
+.eggs/
+*.egg
+*.whl
 
 # Virtual environments
-.venv
-venv
-env
-ENV
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
 
 # IDE
-.vscode
-.idea
+.vscode/
+.idea/
 *.swp
 *.swo
+*~
+*.code-workspace
+.project
+.pydevproject
+.settings/
 
 # Testing
-.pytest_cache
+.pytest_cache/
 .coverage
-htmlcov
-.mypy_cache
-.ruff_cache
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+*.cover
+tests/
+test_*.py
+*_test.py
+
+# Type checking and linting
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+.pytype/
 
 # Logs
-logs
+logs/
 *.log
+*.log.*
 
 # Docker
 Dockerfile
 docker-compose.yml
 .dockerignore
+.docker/
 
 # Documentation
 README.md
+docs/
 *.md
-
-# OS
-.DS_Store
-Thumbs.db
+CHANGELOG*
+LICENSE*
+CONTRIBUTING*
 
 # Environment
 .env
 .env.local
+.env.*.local
+.env.*.backup
 
 # Build artifacts
-build
-dist
-*.egg
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+MANIFEST
 
+# Scripts (not needed in container)
+Makefile
+scripts.ps1
+scripts.bat
+scripts.sh
+
+# Pre-commit
+.pre-commit-config.yaml
+.pre-commit-hooks.yaml
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# pyenv
+.python-version
+
+# Coverage reports
+.coverage.*
+coverage.xml
+*.coveragerc
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~

@@ -4,8 +4,8 @@ from app.schemas.auth.requests import LoginRequest, RefreshRequest, SignupReques
 from app.schemas.auth.responses import TokenResponse
 
 __all__ = [
-    "SignupRequest",
     "LoginRequest",
     "RefreshRequest",
+    "SignupRequest",
     "TokenResponse",
 ]

@@ -57,7 +57,6 @@ def test_alembic_autogenerate_produces_empty_migration_when_synced():
     # This would require database setup in test environment
     # For now, we verify the configuration is correct
     # Actual migration testing should be done manually or in CI with test DB
-    pass
 
 
 @pytest.mark.integration
@@ -68,4 +67,3 @@ def test_alembic_upgrade_runs_successfully():
     """
     # This would require database setup in test environment
     # For now, we verify the configuration is correct
-    pass

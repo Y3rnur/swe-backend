@@ -1,15 +1,27 @@
+# .gitignore - Excludes files from version control
+# Comprehensive ignore patterns for Python/FastAPI project
+
+# ==============================================================================
 # Python
+# ==============================================================================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+*.egg-info/
+.eggs/
+*.egg
+*.whl
+MANIFEST
+.installed.cfg
+
+# Build / Distribution
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
-.eggs/
 lib/
 lib64/
 parts/
@@ -18,98 +30,189 @@ var/
 wheels/
 share/python-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
 
-# Virtual environments
+# ==============================================================================
+# Virtual Environments
+# ==============================================================================
 .env
-.venv
-env/
+.venv/
 venv/
+env/
 ENV/
 env.bak/
 venv.bak/
+.conda/
 
-# IDEs
+# ==============================================================================
+# IDEs and Editors
+# ==============================================================================
+# VS Code
 .vscode/
+*.code-workspace
+.vscode-test
+
+# PyCharm / IntelliJ IDEA
 .idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.project
+.pydevproject
+.settings/
+.classpath
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
 *.swp
 *.swo
 *~
-.DS_Store
+*.swn
+.netrwhist
 
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ==============================================================================
 # Testing
+# ==============================================================================
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 .tox/
 .nox/
-.mypy_cache/
-.ruff_cache/
 .hypothesis/
 *.cover
-*.log
+*.coveragerc
+coverage.xml
+test-results/
+junit.xml
 
-# Environment variables
+# ==============================================================================
+# Type Checking and Linting
+# ==============================================================================
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+.pyre_check_cache/
+
+# ==============================================================================
+# Environment Variables
+# ==============================================================================
 .env
 .env.local
 .env.*.local
+.env.*.backup
+.envrc
 
+# ==============================================================================
 # Database
+# ==============================================================================
 *.db
 *.sqlite
 *.sqlite3
+*.db-journal
 
-# Alembic
-alembic/versions/*.pyc
-
-# Type checking
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
+# ==============================================================================
 # Logs
+# ==============================================================================
 logs/
 *.log
+*.log.*
+*.out
 
-# pyenv
-.python-version
+# ==============================================================================
+# Alembic
+# ==============================================================================
+# Only ignore compiled Python files, not migration files
+alembic/versions/__pycache__/
+alembic/versions/*.pyc
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+# ==============================================================================
+# Docker
+# ==============================================================================
+.docker/
+docker-compose.override.yml
+*.dockerignore
 
-# IDEs - PyCharm
-.idea/
-
-# IDEs - VS Code
-.vscode/
-*.code-workspace
-
-# OS
+# ==============================================================================
+# OS Files
+# ==============================================================================
+# macOS
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
-ehthumbs.db
-Thumbs.db
+.AppleDouble
+.LSOverride
+Icon
 
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ==============================================================================
+# Jupyter Notebook
+# ==============================================================================
+.ipynb_checkpoints/
+*.ipynb
+
+# ==============================================================================
+# pyenv
+# ==============================================================================
+.python-version
+
+# ==============================================================================
+# Pre-commit
+# ==============================================================================
+.pre-commit-config.yaml.bak
+
+# ==============================================================================
+# Temporary Files
+# ==============================================================================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+.cache/
+
+# ==============================================================================
+# Project Specific
+# ==============================================================================
+# Keep these files tracked:
+# - alembic/versions/*.py (migration files should be tracked)
+# - tests/ (test files should be tracked)
+# - docs/ (documentation should be tracked)
+# - README.md (should be tracked)
+# - requirements.txt (should be tracked)
+# - pyproject.toml (should be tracked)
+# - env.example (should be tracked)

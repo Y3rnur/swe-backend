@@ -1,139 +1,428 @@
-# PowerShell scripts similar to npm scripts
+# PowerShell script encoding: UTF-8 with BOM
+# ==============================================================================
+# scripts.ps1 - PowerShell Development Scripts
+# ==============================================================================
+# This script provides convenient commands for common development tasks,
+# similar to npm scripts or Makefile targets.
+#
+# Usage:
+#   .\scripts.ps1 <command> [parameters]
+#
+# Examples:
+#   .\scripts.ps1 install              # Install dependencies
+#   .\scripts.ps1 dev                  # Run development server
+#   .\scripts.ps1 test                # Run tests
+#   .\scripts.ps1 migrate -MESSAGE "Add users table"  # Create migration
+#
+# For a list of all available commands, run:
+#   .\scripts.ps1 help
+#   .\scripts.ps1                    # (no command also shows help)
+#
+# Note: This script is designed for Windows PowerShell. For Linux/Mac,
+#       use the Makefile instead.
+# ==============================================================================
 
+<#
+.SYNOPSIS
+    Development script runner for B2B Supplier-Wholesale Exchange Platform
+
+.DESCRIPTION
+    Provides convenient commands for development tasks including:
+    - Installing dependencies
+    - Running the development server
+    - Running tests and code quality checks
+    - Managing database migrations
+    - Docker operations
+    - And more...
+
+.PARAMETER Command
+    The command to execute (e.g., install, dev, test, etc.)
+
+.PARAMETER MESSAGE
+    Optional message parameter (used for migration commands)
+
+.EXAMPLE
+    .\scripts.ps1 install
+    Installs all dependencies and sets up pre-commit hooks
+
+.EXAMPLE
+    .\scripts.ps1 migrate -MESSAGE "Add users table"
+    Creates a new database migration with the specified message
+#>
+
+[CmdletBinding()]
 param(
     [Parameter(Position=0)]
-    [string]$Command,
+    [string]$Command = "help",
+
     [Parameter(Position=1)]
     [string]$MESSAGE = ""
 )
 
-switch ($Command) {
+# Set error action preference
+$ErrorActionPreference = "Stop"
+
+# Helper function to check if a command exists
+function Test-Command {
+    param([string]$CommandName)
+    $null -ne (Get-Command $CommandName -ErrorAction SilentlyContinue)
+}
+
+# Helper function to display error and exit
+function Write-ErrorAndExit {
+    param([string]$Message, [int]$ExitCode = 1)
+    Write-Host $Message -ForegroundColor Red
+    exit $ExitCode
+}
+
+# Helper function to run command with error handling
+function Invoke-CommandSafe {
+    param(
+        [string]$Description,
+        [string]$Command
+    )
+    Write-Host $Description -ForegroundColor Green
+    try {
+        Invoke-Expression $Command
+        if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null) {
+            Write-ErrorAndExit "Command failed with exit code $LASTEXITCODE" $LASTEXITCODE
+        }
+    }
+    catch {
+        Write-ErrorAndExit "Error: $_" 1
+    }
+}
+
+switch ($Command.ToLower()) {
+    # ==========================================================================
+    # Setup & Installation
+    # ==========================================================================
+
     "install" {
-        Write-Host "Installing dependencies..." -ForegroundColor Green
-        pip install -r requirements.txt
-        pre-commit install
+        Invoke-CommandSafe "[*] Installing dependencies..." "pip install -r requirements.txt"
+        Write-Host "[OK] Dependencies installed successfully" -ForegroundColor Green
     }
+
+    "install-dev" {
+        Invoke-CommandSafe "[*] Installing dependencies..." "pip install -r requirements.txt"
+        Invoke-CommandSafe "[*] Setting up pre-commit hooks..." "pre-commit install"
+        Write-Host "[OK] Development environment ready!" -ForegroundColor Green
+    }
+
+    "setup-env" {
+        if (Test-Path .env) {
+            Write-Host "[!] .env file already exists. Skipping..." -ForegroundColor Yellow
+        } else {
+            if (Test-Path env.example) {
+                Copy-Item env.example .env
+                Write-Host "[OK] .env file created from env.example" -ForegroundColor Green
+                Write-Host "[*] Please edit .env with your settings" -ForegroundColor Cyan
+            } else {
+                Write-ErrorAndExit "[ERROR] env.example file not found" 1
+            }
+        }
+    }
+
+    # ==========================================================================
+    # Development Server
+    # ==========================================================================
+
     "dev" {
-        Write-Host "Starting development server..." -ForegroundColor Green
-        uvicorn app.main:app --reload
+        Write-Host "[*] Starting development server..." -ForegroundColor Green
+        Write-Host "   Server will be available at http://localhost:8000" -ForegroundColor Cyan
+        Write-Host "   API docs: http://localhost:8000/docs" -ForegroundColor Cyan
+        uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
     }
+
     "start" {
-        Write-Host "Starting production server..." -ForegroundColor Green
+        Write-Host "[*] Starting production server..." -ForegroundColor Green
         uvicorn app.main:app --host 0.0.0.0 --port 8000
     }
+
+    # ==========================================================================
+    # Testing
+    # ==========================================================================
+
     "test" {
-        Write-Host "Running tests..." -ForegroundColor Green
-        pytest
+        Invoke-CommandSafe "[*] Running tests..." "pytest"
     }
+
     "test-cov" {
-        Write-Host "Running tests with coverage..." -ForegroundColor Green
-        pytest --cov=. --cov-report=html --cov-report=term
+        Invoke-CommandSafe "[*] Running tests with coverage..." "pytest --cov=app --cov=tests --cov-report=html --cov-report=term-missing --cov-report=xml"
+        Write-Host "[*] Coverage report generated in htmlcov/index.html" -ForegroundColor Cyan
     }
-    "lint" {
-        Write-Host "Running linter..." -ForegroundColor Green
-        ruff check .
+
+    "test-watch" {
+        if (-not (Test-Command "ptw")) {
+            Write-Host "[!] pytest-watch not installed. Installing..." -ForegroundColor Yellow
+            pip install pytest-watch
+        }
+        Write-Host "[*] Running tests in watch mode..." -ForegroundColor Green
+        ptw
     }
-    "lint-fix" {
-        Write-Host "Running linter and fixing issues..." -ForegroundColor Green
-        ruff check --fix .
-    }
+
+    # ==========================================================================
+    # Code Quality
+    # ==========================================================================
+
     "format" {
-        Write-Host "Formatting code..." -ForegroundColor Green
-        ruff format .
+        Invoke-CommandSafe "[*] Formatting code..." "ruff format app tests"
     }
+
+    "format-check" {
+        Invoke-CommandSafe "[*] Checking code formatting..." "ruff format --check app tests"
+    }
+
+    "lint" {
+        Invoke-CommandSafe "[*] Running linter..." "ruff check app tests"
+    }
+
+    "lint-fix" {
+        Invoke-CommandSafe "[*] Running linter and fixing issues..." "ruff check --fix app tests"
+    }
+
     "type-check" {
-        Write-Host "Running type checker..." -ForegroundColor Green
-        mypy .
+        Invoke-CommandSafe "[*] Running type checker..." "mypy app"
     }
+
     "check" {
-        Write-Host "Running all checks..." -ForegroundColor Green
-        ruff format .
-        ruff check --fix .
-        mypy .
+        Write-Host "[*] Running all checks..." -ForegroundColor Green
+        Write-Host ""
+
+        $failed = $false
+
+
+        # Lint
+        Write-Host "1. Running linter..." -ForegroundColor Cyan
+        ruff check app tests
+        if ($LASTEXITCODE -ne 0) { $failed = $true }
+
+        # Lint fix
+        Write-Host "2. Running linter and fixing issues..." -ForegroundColor Cyan
+        ruff check --fix app tests
+        if ($LASTEXITCODE -ne 0) { $failed = $true }
+
+        # Format check
+        Write-Host "3. Checking code formatting..." -ForegroundColor Cyan
+        ruff format --check app tests
+        if ($LASTEXITCODE -ne 0) { $failed = $true }
+
+        # Format
+        Write-Host "4. Formatting code..." -ForegroundColor Cyan
+        ruff format app tests
+        if ($LASTEXITCODE -ne 0) { $failed = $true }
+
+        # Type check
+        Write-Host "5. Running type checker..." -ForegroundColor Cyan
+        mypy app
+        if ($LASTEXITCODE -ne 0) { $failed = $true }
+
+        # Tests
+        Write-Host "6. Running tests..." -ForegroundColor Cyan
         pytest
+        if ($LASTEXITCODE -ne 0) { $failed = $true }
+
+        if ($failed) {
+            Write-Host ""
+            Write-Host "[ERROR] Some checks failed. Please fix the issues above." -ForegroundColor Red
+            exit 1
+        }
+        else {
+            Write-Host ""
+            Write-Host "[OK] All checks passed!" -ForegroundColor Green
+        }
     }
+
+    "pre-commit-run" {
+        Invoke-CommandSafe "[*] Running pre-commit hooks..." "pre-commit run --all-files"
+    }
+
+    "pre-commit-update" {
+        Invoke-CommandSafe "[*] Updating pre-commit hooks..." "pre-commit autoupdate"
+    }
+
+    # ==========================================================================
+    # Database Migrations
+    # ==========================================================================
+
     "migrate" {
         if ($MESSAGE -eq "") {
-            Write-Host "Error: MESSAGE parameter required" -ForegroundColor Red
-            Write-Host "Usage: .\scripts.ps1 migrate -MESSAGE 'description'" -ForegroundColor Yellow
-            break
+            Write-Host "[ERROR] Error: MESSAGE parameter required" -ForegroundColor Red
+            Write-Host "Usage: .\scripts.ps1 migrate -MESSAGE `"description`"" -ForegroundColor Yellow
+            exit 1
         }
-        Write-Host "Creating migration..." -ForegroundColor Green
-        alembic revision --autogenerate -m "$MESSAGE"
+        Invoke-CommandSafe "[*] Creating migration..." "alembic revision --autogenerate -m `"$MESSAGE`""
     }
+
     "revision" {
         if ($MESSAGE -eq "") {
-            Write-Host "Error: MESSAGE parameter required" -ForegroundColor Red
-            Write-Host "Usage: .\scripts.ps1 revision -MESSAGE 'description'" -ForegroundColor Yellow
-            break
+            Write-Host "[ERROR] Error: MESSAGE parameter required" -ForegroundColor Red
+            Write-Host "Usage: .\scripts.ps1 revision -MESSAGE `"description`"" -ForegroundColor Yellow
+            exit 1
         }
-        Write-Host "Creating migration..." -ForegroundColor Green
-        alembic revision --autogenerate -m "$MESSAGE"
+        Invoke-CommandSafe "[*] Creating migration..." "alembic revision --autogenerate -m `"$MESSAGE`""
     }
+
     "upgrade" {
-        Write-Host "Applying migrations..." -ForegroundColor Green
-        alembic upgrade head
+        Invoke-CommandSafe "[*] Applying migrations..." "alembic upgrade head"
     }
+
     "downgrade" {
-        Write-Host "Rolling back one migration..." -ForegroundColor Green
-        alembic downgrade -1
+        Invoke-CommandSafe "[*] Rolling back one migration..." "alembic downgrade -1"
     }
+
     "seed" {
-        Write-Host "Seed command not yet implemented" -ForegroundColor Yellow
+        Write-Host "[!] Seed command not yet implemented" -ForegroundColor Yellow
         Write-Host "TODO: Add database seeding script" -ForegroundColor Yellow
     }
-    "clean" {
-        Write-Host "Cleaning cache and build files..." -ForegroundColor Green
-        Get-ChildItem -Path . -Include __pycache__,*.pyc,.pytest_cache,.mypy_cache,.ruff_cache -Recurse -Force | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
-        if (Test-Path htmlcov) { Remove-Item -Recurse -Force htmlcov }
-        if (Test-Path .coverage) { Remove-Item -Force .coverage }
-        if (Test-Path build) { Remove-Item -Recurse -Force build }
-        if (Test-Path dist) { Remove-Item -Recurse -Force dist }
-        Get-ChildItem -Path . -Filter *.egg-info -Directory | Remove-Item -Recurse -Force
-        Write-Host "Cleanup complete" -ForegroundColor Green
-    }
+
+    # ==========================================================================
+    # Docker Operations
+    # ==========================================================================
+
     "docker-build" {
-        Write-Host "Building Docker image..." -ForegroundColor Green
-        docker build -t swe-backend .
+        Invoke-CommandSafe "[*] Building Docker image..." "docker build -t swe-backend ."
     }
+
     "docker-up" {
-        Write-Host "Starting Docker Compose services..." -ForegroundColor Green
-        docker-compose up -d
+        Invoke-CommandSafe "[*] Starting Docker Compose services..." "docker-compose up -d"
     }
+
     "docker-down" {
-        Write-Host "Stopping Docker Compose services..." -ForegroundColor Green
-        docker-compose down
+        Invoke-CommandSafe "[*] Stopping Docker Compose services..." "docker-compose down"
     }
+
+    "docker-restart" {
+        Invoke-CommandSafe "[*] Restarting Docker Compose services..." "docker-compose restart"
+    }
+
     "docker-logs" {
-        Write-Host "Viewing Docker Compose logs..." -ForegroundColor Green
+        Write-Host "[*] Viewing Docker Compose logs (Ctrl+C to exit)..." -ForegroundColor Green
         docker-compose logs -f
     }
+
     "docker-shell" {
-        Write-Host "Opening shell in Docker container..." -ForegroundColor Green
+        Write-Host "[*] Opening shell in Docker container..." -ForegroundColor Green
         docker-compose exec app bash
     }
+
+    "docker-clean" {
+        Write-Host "[*] Cleaning Docker resources..." -ForegroundColor Green
+        docker-compose down -v
+        docker system prune -f
+        Write-Host "[OK] Docker cleanup complete" -ForegroundColor Green
+    }
+
+    # ==========================================================================
+    # Maintenance
+    # ==========================================================================
+
+    "clean" {
+        Write-Host "[*] Cleaning cache and build files..." -ForegroundColor Green
+
+        # Remove Python cache files
+        Get-ChildItem -Path . -Include __pycache__,*.pyc -Recurse -Force -ErrorAction SilentlyContinue |
+            Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+
+        # Remove test and type checking cache
+        $cacheDirs = @(".pytest_cache", ".mypy_cache", ".ruff_cache", ".coverage", "htmlcov", "build", "dist")
+        foreach ($dir in $cacheDirs) {
+            if (Test-Path $dir) {
+                Remove-Item -Recurse -Force $dir -ErrorAction SilentlyContinue
+            }
+        }
+
+        # Remove egg-info directories
+        Get-ChildItem -Path . -Filter *.egg-info -Directory -ErrorAction SilentlyContinue |
+            Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+
+        Write-Host "[OK] Cleanup complete" -ForegroundColor Green
+    }
+
+    "clean-all" {
+        Write-Host "[*] Performing deep cleanup..." -ForegroundColor Green
+        & $PSScriptRoot\scripts.ps1 clean
+
+        # Remove virtual environment (if exists)
+        if (Test-Path .venv) {
+            $response = Read-Host "Remove .venv directory? (y/N)"
+            if ($response -eq "y" -or $response -eq "Y") {
+                Remove-Item -Recurse -Force .venv
+                Write-Host "[OK] Virtual environment removed" -ForegroundColor Green
+            }
+        }
+
+        Write-Host "[OK] Deep cleanup complete" -ForegroundColor Green
+    }
+
+    # ==========================================================================
+    # Help
+    # ==========================================================================
+
+    "help" {
+        Write-Host ""
+        Write-Host "================================================================================" -ForegroundColor Cyan
+        Write-Host "          PowerShell Development Scripts - Available Commands" -ForegroundColor Cyan
+        Write-Host "================================================================================" -ForegroundColor Cyan
+        Write-Host ""
+
+        Write-Host "[*] Setup & Installation:" -ForegroundColor Yellow
+        Write-Host "  .\scripts.ps1 install          Install production dependencies" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 install-dev      Install dependencies + setup pre-commit" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 setup-env        Create .env file from env.example" -ForegroundColor White
+        Write-Host ""
+
+        Write-Host "[*] Development:" -ForegroundColor Yellow
+        Write-Host "  .\scripts.ps1 dev              Run development server (hot reload)" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 start            Run production server" -ForegroundColor White
+        Write-Host ""
+
+        Write-Host "[*] Testing:" -ForegroundColor Yellow
+        Write-Host "  .\scripts.ps1 test             Run all tests" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 test-cov         Run tests with coverage report" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 test-watch       Run tests in watch mode" -ForegroundColor White
+        Write-Host ""
+
+        Write-Host "[*] Code Quality:" -ForegroundColor Yellow
+        Write-Host "  .\scripts.ps1 format            Format code with ruff" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 format-check      Check if code is formatted" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 lint              Run linter (ruff check)" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 lint-fix         Run linter and fix issues" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 type-check       Run type checker (mypy)" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 check            Run all checks (format, lint, type, test)" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 pre-commit-run    Run pre-commit hooks on all files" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 pre-commit-update  Update pre-commit hooks" -ForegroundColor White
+        Write-Host ""
+
+        Write-Host "[*] Database:" -ForegroundColor Yellow
+        Write-Host "  .\scripts.ps1 migrate -MESSAGE `"desc`"  Create new migration" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 revision -MESSAGE `"desc`"  Alias for migrate" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 upgrade            Apply all migrations" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 downgrade          Rollback one migration" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 seed              Seed database (not implemented)" -ForegroundColor White
+        Write-Host ""
+
+        Write-Host "[*] Docker:" -ForegroundColor Yellow
+        Write-Host "  .\scripts.ps1 docker-build      Build Docker image" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 docker-up          Start Docker Compose services" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 docker-down        Stop Docker Compose services" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 docker-restart     Restart Docker Compose services" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 docker-logs        View Docker Compose logs" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 docker-shell      Open shell in Docker container" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 docker-clean       Clean Docker resources" -ForegroundColor White
+        Write-Host ""
+
+        Write-Host "[*] Maintenance:" -ForegroundColor Yellow
+        Write-Host "  .\scripts.ps1 clean             Clean cache and build files" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 clean-all         Deep cleanup (includes .venv)" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 help              Show this help message" -ForegroundColor White
+        Write-Host ""
+    }
+
     default {
-        Write-Host "Available commands:" -ForegroundColor Yellow
-        Write-Host "  .\scripts.ps1 install       - Install dependencies" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 dev           - Run development server" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 start         - Run production server" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 test          - Run tests" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 test-cov      - Run tests with coverage" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 lint          - Run linter" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 lint-fix      - Run linter and fix issues" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 format        - Format code" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 type-check    - Run type checker" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 check         - Run all checks" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 migrate -MESSAGE 'description'  - Create migration" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 revision -MESSAGE 'description' - Alias for migrate" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 upgrade       - Apply migrations" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 downgrade     - Rollback one migration" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 seed          - Seed database" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 clean         - Clean cache and build files" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 docker-build  - Build Docker image" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 docker-up     - Start Docker Compose services" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 docker-down   - Stop Docker Compose services" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 docker-logs   - View Docker Compose logs" -ForegroundColor Cyan
-        Write-Host "  .\scripts.ps1 docker-shell  - Open shell in Docker container" -ForegroundColor Cyan
+        Write-Host "[ERROR] Unknown command: $Command" -ForegroundColor Red
+        Write-Host ""
+        & $PSScriptRoot\scripts.ps1 help
+        exit 1
     }
 }

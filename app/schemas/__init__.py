@@ -23,29 +23,23 @@ from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
 from app.schemas.user import UserResponse
 
 __all__ = [
-    # Auth schemas
-    "LoginRequest",
-    "RefreshRequest",
-    "SignupRequest",
-    "TokenResponse",
-    # Common schemas
     "ErrorResponse",
     "HealthCheckResponse",
-    "MessageResponse",
-    "PaginationResponse",
-    # Link schemas
     "LinkRequestCreate",
     "LinkResponse",
     "LinkStatusUpdate",
-    # Product schemas
-    "ProductCreate",
-    "ProductResponse",
-    "ProductUpdate",
-    # Order schemas
+    "LoginRequest",
+    "MessageResponse",
     "OrderCreate",
     "OrderItemResponse",
     "OrderResponse",
     "OrderStatusUpdate",
-    # User schemas
+    "PaginationResponse",
+    "ProductCreate",
+    "ProductResponse",
+    "ProductUpdate",
+    "RefreshRequest",
+    "SignupRequest",
+    "TokenResponse",
     "UserResponse",
 ]

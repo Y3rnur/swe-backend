@@ -1,41 +1,186 @@
-version: '3.8'
+# Docker Compose configuration for B2B Supplier-Wholesale Exchange Platform
+#
+# This file defines the services needed to run the application:
+# - db: PostgreSQL database server
+# - app: FastAPI application server
+#
+# Usage:
+#   docker-compose up -d          # Start services in detached mode
+#   docker-compose logs -f        # View logs
+#   docker-compose down            # Stop and remove containers
+#   docker-compose down -v         # Stop and remove containers + volumes
+#
+# Environment Variables:
+#   Environment variables can be set in a .env file or passed directly.
+#   The app service will use DATABASE_URL from environment or defaults to the
+#   connection string pointing to the db service.
+#
+# Note: The 'version' field is obsolete in Docker Compose v2+ but kept for
+#       compatibility with older versions. Modern Docker Compose ignores it.
 
 services:
+  # ============================================================================
+  # PostgreSQL Database Service
+  # ============================================================================
   db:
     image: postgres:16-alpine
     container_name: swe-backend-db
+    restart: unless-stopped
+
     environment:
+      # Database credentials (change in production!)
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: mydb
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  app:
-    build: .
-    container_name: swe-backend-app
+      # PostgreSQL configuration
+      # Uncomment to customize PostgreSQL settings
+      # POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+      # PGDATA: /var/lib/postgresql/data/pgdata
+
     ports:
-      - "8000:8000"
+      # Expose PostgreSQL port to host
+      # Format: "host_port:container_port"
+      - '5432:5432'
+
+    volumes:
+      # Persistent data storage
+      # Named volume ensures data persists across container restarts
+      - postgres_data:/var/lib/postgresql/data
+
+      # Uncomment to mount custom PostgreSQL configuration
+      # - ./postgresql.conf:/etc/postgresql/postgresql.conf
+
+    healthcheck:
+      # Health check to ensure database is ready before app starts
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s # Check every 10 seconds
+      timeout: 5s # Timeout after 5 seconds
+      retries: 5 # Retry 5 times before marking as unhealthy
+      start_period: 10s # Wait 10 seconds before starting health checks
+
+    # Resource limits (optional, uncomment to enable)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '1.0'
+    #       memory: 512M
+    #     reservations:
+    #       cpus: '0.5'
+    #       memory: 256M
+
+    # Network configuration (optional)
+    # networks:
+    #   - backend
+
+  # ============================================================================
+  # FastAPI Application Service
+  # ============================================================================
+  app:
+    build:
+      # Build from Dockerfile in current directory
+      context: .
+      dockerfile: Dockerfile
+      # Uncomment to use a specific build target (if using multi-stage builds)
+      # target: production
+
+    container_name: swe-backend-app
+    restart: unless-stopped
+
+    ports:
+      # Expose FastAPI application port
+      - '8000:8000'
+
     environment:
+      # Database connection URL
+      # Uses 'db' as hostname (Docker Compose service name)
+      # Format: postgresql+asyncpg://user:password@host:port/dbname
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/mydb
-      - LOG_LEVEL=INFO
-      - ENV=dev
+
+      # Application settings
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - ENV=${ENV:-dev}
+
+      # Security settings (should be set via .env file in production)
+      # - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      # - ALGORITHM=${ALGORITHM:-HS256}
+      # - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      # - REFRESH_TOKEN_EXPIRE_MINUTES=${REFRESH_TOKEN_EXPIRE_MINUTES:-10080}
+
+      # CORS settings
+      # - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:8000}
+
     depends_on:
+      # Wait for database to be healthy before starting app
       db:
         condition: service_healthy
+
     volumes:
+      # Mount logs directory for persistent logging
       - ./logs:/app/logs
+
+      # Development: Mount source code for hot reload (uncomment for development)
+      # - ./app:/app/app
+      # - ./alembic:/app/alembic
+      # - ./alembic.ini:/app/alembic.ini
+
     command: >
-      sh -c "alembic upgrade head &&
-             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+      sh -c "
+        echo 'Running database migrations...' &&
+        alembic upgrade head &&
+        echo 'Starting application server...' &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000
+      "
+
+
+    # Health check for application (optional)
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 40s
+
+    # Resource limits (optional, uncomment to enable)
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '2.0'
+    #       memory: 1G
+    #     reservations:
+    #       cpus: '0.5'
+    #       memory: 512M
+
+    # Network configuration (optional)
+    # networks:
+    #   - backend
+
+# ==============================================================================
+# Volumes
+# ==============================================================================
+# Named volumes for persistent data storage
+# Volumes are managed by Docker and persist even if containers are removed
+# Use 'docker-compose down -v' to remove volumes
 
 volumes:
   postgres_data:
+    # Volume driver options (optional)
+    # driver: local
+    # driver_opts:
+    #   type: none
+    #   o: bind
+    #   device: ./postgres_data
+# ==============================================================================
+# Networks (optional)
+# ==============================================================================
+# Uncomment to create a custom network for services
+# This isolates services from other Docker Compose projects
 
+# networks:
+#   backend:
+#     driver: bridge
+#     # Optional: configure IPAM
+#     # ipam:
+#     #   driver: default
+#     #   config:
+#     #     - subnet: 172.20.0.0/16

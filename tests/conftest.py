@@ -1,7 +1,6 @@
 """Pytest configuration and fixtures."""
 
-from collections.abc import AsyncGenerator
-from collections.abc import AsyncGenerator as TypingAsyncGenerator
+from collections.abc import AsyncGenerator, AsyncGenerator as TypingAsyncGenerator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
