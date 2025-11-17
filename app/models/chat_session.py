@@ -31,7 +31,7 @@ class ChatSession(Base):
         ForeignKey("orders.id", ondelete="SET NULL"), nullable=True, index=True
     )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
 
     consumer: Mapped[Consumer] = relationship(

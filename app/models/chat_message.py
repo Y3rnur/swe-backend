@@ -28,7 +28,7 @@ class ChatMessage(Base):
     text: Mapped[str] = mapped_column(Text, nullable=False)
     file_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
 
     session: Mapped[ChatSession] = relationship(

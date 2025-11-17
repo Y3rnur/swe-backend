@@ -27,7 +27,7 @@ class SupplierStaff(Base):
     )
     staff_role: Mapped[str] = mapped_column(String(100), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
 
     user: Mapped[User] = relationship("User", back_populates="supplier_staff")
