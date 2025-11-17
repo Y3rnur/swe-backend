@@ -160,4 +160,3 @@ This document defines the criteria that must be met for any backend work to be c
 
 **Version:** 1.0
 **Date:** 2025.11.17
-
