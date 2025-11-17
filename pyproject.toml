@@ -91,6 +91,14 @@ ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = [
+    "app.utils.hashing",
+    "app.core.security",
+    "app.api.deps",
+]
+warn_return_any = false
+
+[[tool.mypy.overrides]]
+module = [
     "tests.*",
 ]
 disallow_untyped_defs = false
@@ -98,10 +106,15 @@ disallow_incomplete_defs = false
 
 [[tool.mypy.overrides]]
 module = "sqlalchemy.*"
-ignore_missing_imports = false
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "dotenv.*"
+module = [
+    "dotenv.*",
+    "bcrypt.*",
+    "jwt.*",
+    "PyJWT.*",
+]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
@@ -116,4 +129,3 @@ addopts = ["-v", "--strict-markers", "--tb=short"]
 unit = "Unit tests"
 integration = "Integration tests"
 slow = "Slow running tests"
-

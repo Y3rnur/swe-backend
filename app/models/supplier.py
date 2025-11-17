@@ -32,9 +32,7 @@ class Supplier(Base):
     )
 
     user: Mapped[User] = relationship("User", back_populates="supplier")
-    products: Mapped[list[Product]] = relationship(
-        "Product", back_populates="supplier"
-    )
+    products: Mapped[list[Product]] = relationship("Product", back_populates="supplier")
     links: Mapped[list[Link]] = relationship("Link", back_populates="supplier")
     orders: Mapped[list[Order]] = relationship("Order", back_populates="supplier")
     staff: Mapped[list[SupplierStaff]] = relationship(

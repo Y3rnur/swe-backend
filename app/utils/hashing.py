@@ -1,21 +1,18 @@
 """Password hashing utilities."""
 
-import hashlib
-import secrets
+import bcrypt
 
 
 def hash_password(password: str) -> str:
-    """Hash a password using SHA-256 with salt."""
-    salt = secrets.token_hex(16)
-    password_hash = hashlib.sha256((salt + password).encode()).hexdigest()
-    return f"{salt}:{password_hash}"
+    """Hash a password using bcrypt."""
+    salt = bcrypt.gensalt()
+    password_hash = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return password_hash.decode("utf-8")
 
 
 def verify_password(password: str, hashed: str) -> bool:
-    """Verify a password against a hash."""
+    """Verify a password against a bcrypt hash."""
     try:
-        salt, password_hash = hashed.split(":")
-        test_hash = hashlib.sha256((salt + password).encode()).hexdigest()
-        return secrets.compare_digest(test_hash, password_hash)
-    except (ValueError, AttributeError):
+        return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
+    except (ValueError, AttributeError, TypeError):
         return False

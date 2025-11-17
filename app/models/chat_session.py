@@ -40,9 +40,7 @@ class ChatSession(Base):
     sales_rep: Mapped[User] = relationship(
         "User", foreign_keys=[sales_rep_id], back_populates="chat_sessions"
     )
-    order: Mapped[Order | None] = relationship(
-        "Order", back_populates="chat_sessions"
-    )
+    order: Mapped[Order | None] = relationship("Order", back_populates="chat_sessions")
     messages: Mapped[list[ChatMessage]] = relationship(
         "ChatMessage", back_populates="session", cascade="all, delete-orphan"
     )

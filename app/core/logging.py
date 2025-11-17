@@ -66,7 +66,7 @@ def setup_logging(log_level: str = "INFO", env: str = "dev") -> None:
     root_logger.handlers.clear()
 
     if env.lower() == "production":
-        formatter = JSONFormatter()
+        formatter: logging.Formatter = JSONFormatter()
     else:
         log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         date_format = "%Y-%m-%d %H:%M:%S"
