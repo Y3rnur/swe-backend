@@ -15,6 +15,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.core.config import settings
 from app.db.base import Base
 
+# Import all models so Alembic can discover them
+from app.models import *  # noqa: F401, F403
+
 # Alembic Config object
 config = context.config
 
