@@ -1,0 +1,10 @@
+# Ignore migration files (they're auto-generated)
+alembic/versions/*.py
+
+# Ignore cache and build directories
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+__pycache__/
+*.pyc
+

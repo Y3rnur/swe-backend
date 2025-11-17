@@ -1,0 +1,119 @@
+[tool.ruff]
+# Python version
+target-version = "py311"
+line-length = 88
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "dist",
+    "build",
+    ".eggs",
+    "*.egg",
+    "alembic/versions",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+]
+
+[tool.ruff.lint]
+# Enable commonly used rules
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import sorting)
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+"tests/*" = ["ARG", "S101"]  # Allow unused arguments and use of assert in tests
+"alembic/versions/*" = ["E501"]  # Allow long lines in migration files
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+# Respect magic trailing comma
+skip-magic-trailing-comma = false
+# Automatically detect the appropriate line ending
+line-ending = "auto"
+
+[tool.mypy]
+# Python version
+python_version = "3.11"
+
+# Strictness level
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false  # Allow gradual typing
+disallow_incomplete_defs = false
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+
+# Platform settings
+platform = "win32"  # Can be changed to "linux" or "darwin" if needed
+
+# Show error codes
+show_error_codes = true
+
+# Follow imports
+follow_imports = "normal"
+namespace_packages = true
+
+# Ignore missing imports for third-party libraries
+ignore_missing_imports = false
+
+# Per-module options
+[[tool.mypy.overrides]]
+module = [
+    "alembic.*",
+    "alembic.versions.*",
+]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[[tool.mypy.overrides]]
+module = "sqlalchemy.*"
+ignore_missing_imports = false
+
+[[tool.mypy.overrides]]
+module = "dotenv.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+addopts = ["-v", "--strict-markers", "--tb=short"]
+
+[tool.pytest.ini_options.markers]
+unit = "Unit tests"
+integration = "Integration tests"
+slow = "Slow running tests"
+
