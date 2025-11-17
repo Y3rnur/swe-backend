@@ -4,9 +4,10 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.helpers import get_user_by_id
+from app.core.constants import ErrorMessages
 from app.core.roles import Role
 from app.core.security import decode_access_token
 from app.db.session import get_db
@@ -24,23 +25,22 @@ async def get_current_user(
     if payload is None or (user_id := payload.get("sub")) is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials"
+            detail=ErrorMessages.COULD_NOT_VALIDATE_CREDENTIALS
             if payload is None
-            else "Invalid token payload",
+            else ErrorMessages.INVALID_TOKEN_PAYLOAD,
             headers={"WWW-Authenticate": "Bearer"},
         )
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
+    user = await get_user_by_id(user_id, db)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
+            detail=ErrorMessages.USER_NOT_FOUND,
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is inactive",
+            detail=ErrorMessages.USER_INACTIVE,
         )
     return user
 
@@ -59,13 +59,8 @@ def require_roles(*roles: Role):
         if user_role is None or user_role not in roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not enough permissions",
+                detail=ErrorMessages.NOT_ENOUGH_PERMISSIONS,
             )
         return current_user
 
     return role_checker
-
-
-async def get_current_db(db: AsyncSession = Depends(get_db)) -> AsyncSession:
-    """Get current database session."""
-    return db

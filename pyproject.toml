@@ -94,6 +94,7 @@ module = [
     "app.utils.hashing",
     "app.core.security",
     "app.api.deps",
+    "app.api.helpers",
 ]
 warn_return_any = false
 
