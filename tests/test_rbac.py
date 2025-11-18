@@ -3,9 +3,9 @@
 import pytest
 from fastapi import HTTPException, status
 
-from app.api.deps import require_roles
+from app.api.dependencies import require_roles
 from app.core.roles import Role
-from app.models.user import User
+from app.modules.user.model import User
 
 
 class TestRequireRoles:

@@ -4,9 +4,9 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.consumer import Consumer
-from app.models.link import Link, LinkStatus
-from app.models.supplier import Supplier
+from app.modules.consumer.model import Consumer
+from app.modules.link.model import Link, LinkStatus
+from app.modules.supplier.model import Supplier
 
 
 @pytest.mark.asyncio
@@ -761,7 +761,7 @@ async def test_get_consumer_links_with_pagination(
     await db_session.refresh(supplier)
 
     # Create multiple suppliers and links (to avoid unique constraint violation)
-    links = []
+    links: list[Link] = []
     for i in range(5):
         supplier_data = {
             "email": f"supplier12_{i}@example.com",

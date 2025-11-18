@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime, timedelta
 
+from app.core.config import settings
 from app.core.security import (
     create_access_token,
     create_refresh_token,
@@ -140,8 +141,6 @@ class TestJWTTokens:
 
     def test_access_token_uses_settings_expiry(self):
         """Test that access token uses expiry from settings."""
-        from app.core.config import settings
-
         data = {"sub": 1}
         token = create_access_token(data)
         decoded = decode_access_token(token)
@@ -159,8 +158,6 @@ class TestJWTTokens:
 
     def test_refresh_token_uses_settings_expiry(self):
         """Test that refresh token uses expiry from settings."""
-        from app.core.config import settings
-
         data = {"sub": 1}
         token = create_refresh_token(data)
         decoded = decode_refresh_token(token)

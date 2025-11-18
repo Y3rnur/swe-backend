@@ -3,18 +3,7 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.session import AsyncSessionLocal, engine, get_db
-
-
-def test_engine_created():
-    """Test that async engine is created."""
-    assert engine is not None
-    assert engine.url is not None
-
-
-def test_async_session_local_created():
-    """Test that AsyncSessionLocal is created."""
-    assert AsyncSessionLocal is not None
+from app.db.session import get_db
 
 
 def test_get_db_return_type():

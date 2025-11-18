@@ -2,30 +2,26 @@
 
 from fastapi import FastAPI
 
-from app.api.routers import (
-    auth_router,
-    catalog_router,
-    chats_router,
-    complaints_router,
-    links_router,
-    main_router,
-    notifications_router,
-    orders_router,
-    products_router,
-    users_router,
-)
+from app.api.catalog import CatalogueRouter
+from app.api.main import MainRouter
 from app.core.config import settings
+from app.modules.auth.router import AuthRouter
+from app.modules.complaint.router import ComplaintRouter
+from app.modules.link.router import LinkRouter
+from app.modules.notification.router import NotificationRouter
+from app.modules.order.router import OrderRouter
+from app.modules.product.router import ProductRouter
+from app.modules.user.router import UserRouter
 
 
 def register_routers(app: FastAPI) -> None:
     """Register all API routers."""
-    app.include_router(main_router, prefix=settings.API_V1_PREFIX)
-    app.include_router(auth_router, prefix=settings.API_V1_PREFIX)
-    app.include_router(users_router, prefix=settings.API_V1_PREFIX)
-    app.include_router(links_router, prefix=settings.API_V1_PREFIX)
-    app.include_router(products_router, prefix=settings.API_V1_PREFIX)
-    app.include_router(catalog_router, prefix=settings.API_V1_PREFIX)
-    app.include_router(orders_router, prefix=settings.API_V1_PREFIX)
-    app.include_router(chats_router, prefix=settings.API_V1_PREFIX)
-    app.include_router(complaints_router, prefix=settings.API_V1_PREFIX)
-    app.include_router(notifications_router, prefix=settings.API_V1_PREFIX)
+    app.include_router(MainRouter)
+    app.include_router(CatalogueRouter, prefix=settings.API_V1_PREFIX)
+    app.include_router(AuthRouter, prefix=settings.API_V1_PREFIX)
+    app.include_router(ComplaintRouter, prefix=settings.API_V1_PREFIX)
+    app.include_router(LinkRouter, prefix=settings.API_V1_PREFIX)
+    app.include_router(NotificationRouter, prefix=settings.API_V1_PREFIX)
+    app.include_router(OrderRouter, prefix=settings.API_V1_PREFIX)
+    app.include_router(ProductRouter, prefix=settings.API_V1_PREFIX)
+    app.include_router(UserRouter, prefix=settings.API_V1_PREFIX)

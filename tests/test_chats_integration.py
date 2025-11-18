@@ -4,10 +4,9 @@ import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.consumer import Consumer
-from app.models.order import Order, OrderStatus
-from app.models.supplier import Supplier
-from app.models.supplier_staff import SupplierStaff
+from app.modules.consumer.model import Consumer
+from app.modules.order.model import Order, OrderStatus
+from app.modules.supplier.model import Supplier, SupplierStaff
 
 
 @pytest.mark.asyncio

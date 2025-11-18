@@ -194,7 +194,7 @@ All endpoints are prefixed with `/api/v1`.
 
 ### Health
 
-- `GET /api/v1/health` - Health check endpoint
+- `GET /health` - Health check endpoint
 
 ## 🧪 Testing
 
@@ -258,7 +258,7 @@ swe-backend/
 │   │   │   ├── chats.py      # Chat system
 │   │   │   ├── complaints.py # Complaint handling
 │   │   │   └── notifications.py # Notifications
-│   │   ├── deps.py           # FastAPI dependencies
+│   │   ├── dependencies.py           # FastAPI dependencies
 │   │   └── helpers.py        # Helper functions
 │   ├── core/
 │   │   ├── config.py         # Application settings

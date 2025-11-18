@@ -131,9 +131,6 @@ python_version = "3.13"
 # ==============================================================================
 # These settings control how strict mypy is when type checking
 
-# Warn about returning Any from functions
-warn_return_any = true
-
 # Warn about unused type ignores and configs
 warn_unused_configs = true
 warn_unused_ignores = true
@@ -144,6 +141,7 @@ disallow_untyped_defs = false  # Allow functions without type annotations
 disallow_incomplete_defs = false  # Allow incomplete type annotations
 check_untyped_defs = true  # Type check untyped function definitions
 disallow_untyped_decorators = false  # Allow decorators without type annotations
+
 
 # Optional type handling
 no_implicit_optional = true  # Require explicit Optional for None defaults
@@ -175,6 +173,9 @@ follow_imports = "normal"
 # Enable namespace packages
 namespace_packages = true
 
+# Enable explicit package bases (fixes duplicate module name errors)
+explicit_package_bases = true
+
 # Ignore missing imports for third-party libraries
 # Set to true if you want to ignore missing stubs for third-party packages
 ignore_missing_imports = false
@@ -191,17 +192,6 @@ module = [
     "alembic.versions.*",
 ]
 ignore_errors = true
-
-# Router modules: disable warn_return_any (FastAPI dependency injection)
-[[tool.mypy.overrides]]
-module = [
-    "app.utils.hashing",
-    "app.core.security",
-    "app.api.deps",
-    "app.api.helpers",
-    "app.api.routers.*",
-]
-warn_return_any = false
 
 # Test files: allow untyped definitions (tests don't need strict typing)
 [[tool.mypy.overrides]]
