@@ -10,6 +10,7 @@ from app.core.security import (
     decode_refresh_token,
 )
 from app.db.session import get_db
+from app.main import logger
 from app.modules.auth.schema import (
     LoginRequest,
     RefreshRequest,
@@ -51,11 +52,18 @@ async def signup(
         email=request.email,
         password_hash=password_hash,
         role=request.role.value,
-        is_active=True,
     )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
+    try:
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Failed to create user: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=ErrorMessages.FAILED_TO_CREATE_USER,
+        )
     return _create_tokens(user)
 
 
@@ -66,7 +74,13 @@ async def login(
 ):
     """Authenticate user and return tokens."""
     user = await get_user_by_email(request.email, db)
-    if not user or not verify_password(request.password, user.password_hash):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=ErrorMessages.INCORRECT_CREDENTIALS,
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not verify_password(request.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=ErrorMessages.INCORRECT_CREDENTIALS,

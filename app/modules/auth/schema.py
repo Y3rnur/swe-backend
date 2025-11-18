@@ -1,5 +1,7 @@
 """Authentication request schemas."""
 
+from typing import Literal
+
 from pydantic import BaseModel, EmailStr, Field
 
 from app.core.roles import Role
@@ -10,7 +12,7 @@ class SignupRequest(BaseModel):
 
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=100)
-    role: Role
+    role: Literal[Role.CONSUMER, Role.SUPPLIER_OWNER]
 
 
 class LoginRequest(BaseModel):

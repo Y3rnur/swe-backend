@@ -6,6 +6,7 @@ from app.api.catalog import CatalogueRouter
 from app.api.main import MainRouter
 from app.core.config import settings
 from app.modules.auth.router import AuthRouter
+from app.modules.chat.router import ChatRouter
 from app.modules.complaint.router import ComplaintRouter
 from app.modules.link.router import LinkRouter
 from app.modules.notification.router import NotificationRouter
@@ -19,6 +20,7 @@ def register_routers(app: FastAPI) -> None:
     app.include_router(MainRouter)
     app.include_router(CatalogueRouter, prefix=settings.API_V1_PREFIX)
     app.include_router(AuthRouter, prefix=settings.API_V1_PREFIX)
+    app.include_router(ChatRouter, prefix=settings.API_V1_PREFIX)
     app.include_router(ComplaintRouter, prefix=settings.API_V1_PREFIX)
     app.include_router(LinkRouter, prefix=settings.API_V1_PREFIX)
     app.include_router(NotificationRouter, prefix=settings.API_V1_PREFIX)

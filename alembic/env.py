@@ -14,9 +14,17 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.core.config import settings
 from app.db.base import Base
+from app.modules.chat.model import *  # noqa: F403
+from app.modules.complaint.model import *  # noqa: F403
+from app.modules.consumer.model import *  # noqa: F403
+from app.modules.link.model import *  # noqa: F403
+from app.modules.notification.model import *  # noqa: F403
+from app.modules.order.model import *  # noqa: F403
+from app.modules.product.model import *  # noqa: F403
+from app.modules.supplier.model import *  # noqa: F403
 
 # Import all models so Alembic can discover them
-from app.modules import *  # noqa: F403
+from app.modules.user.model import *  # noqa: F403
 
 # Alembic Config object
 config = context.config

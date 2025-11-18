@@ -16,7 +16,7 @@ def register_exception_handlers(app: FastAPI) -> None:
     """Register all exception handlers."""
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(
+    async def validation_exception_handler(  # pyright: ignore[reportUnusedFunction]
         _request: Request, exc: RequestValidationError
     ) -> JSONResponse:
         """Handle validation errors."""
@@ -30,7 +30,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(
+    async def http_exception_handler(  # pyright: ignore[reportUnusedFunction]
         _request: Request, exc: StarletteHTTPException
     ) -> JSONResponse:
         """Handle HTTP exceptions."""
@@ -43,7 +43,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(Exception)
-    async def general_exception_handler(
+    async def general_exception_handler(  # pyright: ignore[reportUnusedFunction]
         _request: Request, exc: Exception
     ) -> JSONResponse:
         """Handle general exceptions."""

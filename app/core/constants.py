@@ -13,3 +13,4 @@ class ErrorMessages:
     INVALID_TOKEN_PAYLOAD = "Invalid token payload"
     COULD_NOT_VALIDATE_CREDENTIALS = "Could not validate credentials"
     NOT_ENOUGH_PERMISSIONS = "Not enough permissions"
+    FAILED_TO_CREATE_USER = "Failed to create user account"
