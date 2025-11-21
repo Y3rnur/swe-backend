@@ -25,7 +25,7 @@ class SignupRequest(BaseModel):
     password: str = Field(
         ...,
         min_length=8,
-        max_length=100,
+        max_length=128,  # Reasonable max length for passwords
         description="User password (min 8 chars, must contain uppercase, lowercase, and digit)",
     )
     role: Literal[Role.CONSUMER, Role.SUPPLIER_OWNER] = Field(

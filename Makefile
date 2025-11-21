@@ -135,15 +135,21 @@ type-check: ## Run type checker (mypy)
 	@echo "🔍 Running type checker..."
 	mypy app
 
-check: lint lint-fix format-check format type-check test ## Run all checks (lint, type-check, test)
+security: ## Run security linting (bandit)
+	@echo "🔒 Running security linting..."
+	bandit -r app -f json -o bandit-report.json || true
+	bandit -r app -ll
+	@echo "✅ Security check complete! See bandit-report.json for details."
+
+check: lint lint-fix format-check format type-check security test ## Run all checks (lint, type-check, security, test)
 	@echo "✅ All checks passed!"
 
-ci: lint test-cov ## Run CI-like checks (lint + test with coverage)
+ci: lint security test-cov ## Run CI-like checks (lint + security + test with coverage)
 	@echo "✅ CI checks passed!"
 
 # Combined command for CI/CD pipeline
-lint-and-test: lint test-cov ## Run lint and tests with coverage (CI-like)
-	@echo "✅ Lint and test checks passed!"
+lint-and-test: lint security test-cov ## Run lint, security, and tests with coverage (CI-like)
+	@echo "✅ Lint, security, and test checks passed!"
 
 pre-commit-run: ## Run pre-commit hooks on all files
 	@echo "🔍 Running pre-commit hooks..."

@@ -34,13 +34,21 @@ async def lifespan(_app: FastAPI):
         logger.error(f"Error during shutdown: {e}")
 
 
+# Disable OpenAPI docs in production unless explicitly enabled
+docs_url = (
+    "/docs" if (settings.ENV != "production" or settings.ENABLE_DOCS_IN_PROD) else None
+)
+redoc_url = (
+    "/redoc" if (settings.ENV != "production" or settings.ENABLE_DOCS_IN_PROD) else None
+)
+
 app = FastAPI(
     lifespan=lifespan,
     title=settings.PROJECT_NAME,
     description=settings.DESCRIPTION,
     version=settings.VERSION,
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=docs_url,
+    redoc_url=redoc_url,
     openapi_tags=[
         {
             "name": "main",

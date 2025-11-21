@@ -111,3 +111,10 @@ mypy==1.18.2
 
 # pre-commit - Git hooks framework for running checks before commits
 pre-commit==4.4.0
+
+# ==============================================================================
+# Security Scanning
+# ==============================================================================
+
+# bandit - Security linter for Python code
+bandit[toml]==1.7.10

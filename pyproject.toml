@@ -309,3 +309,22 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "@abstractmethod",
 ]
+
+# ==============================================================================
+# Bandit Security Linter Configuration
+# ==============================================================================
+# Bandit is a security linter for Python code
+# Documentation: https://bandit.readthedocs.io/
+
+[tool.bandit]
+# Exclude test files and common false positives
+exclude_dirs = ["tests", "alembic", ".venv", "venv", "__pycache__"]
+
+# Skip specific tests (B101: assert_used is OK in tests)
+skips = ["B101"]  # Skip assert_used warnings (OK in tests)
+
+# Security level (low, medium, high)
+level = 1  # Report issues of medium severity and above
+
+# Confidence level (low, medium, high)
+confidence = 1  # Report issues with medium confidence and above

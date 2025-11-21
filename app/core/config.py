@@ -44,6 +44,12 @@ class Settings(BaseSettings):
     SLOW_QUERY_THRESHOLD_MS: int = 1000  # Log queries slower than this (milliseconds)
     HEALTH_CHECK_TIMEOUT_SECONDS: float = 5.0  # Timeout for DB health check
 
+    # Security hardening
+    BCRYPT_ROUNDS: int = 12  # Bcrypt cost factor (12 is recommended for 2024+)
+    MAX_REQUEST_SIZE: int = 10 * 1024 * 1024  # 10MB max request body size
+    MAX_STRING_LENGTH: int = 10000  # Max length for string fields
+    ENABLE_DOCS_IN_PROD: bool = False  # Disable OpenAPI docs in production by default
+
     @model_validator(mode="before")
     @classmethod
     def parse_cors_origins(

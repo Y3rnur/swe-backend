@@ -15,8 +15,17 @@ class ChatSessionCreate(BaseModel):
 class ChatMessageCreate(BaseModel):
     """Chat message creation request schema."""
 
-    text: str = Field(..., min_length=1, max_length=10000, description="Message text")
-    file_url: str | None = Field(None, max_length=500, description="Optional file URL")
+    text: str = Field(
+        ...,
+        min_length=1,
+        max_length=10000,  # Max message length (10KB) - security limit
+        description="Message text",
+    )
+    file_url: str | None = Field(
+        None,
+        max_length=500,
+        description="Optional file URL (must be a valid URL, no direct file uploads)",
+    )
 
 
 class ChatMessageResponse(BaseModel):

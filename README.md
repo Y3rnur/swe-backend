@@ -468,14 +468,17 @@ swe-backend/
 
 ## 🔒 Security Features
 
-- JWT-based authentication
-- Password hashing with bcrypt
-- Role-based access control (RBAC)
-- Request validation with Pydantic
-- SQL injection protection (SQLAlchemy ORM)
-- CORS configuration
-- Environment-based configuration
-- Rate limiting (configurable per endpoint)
+- **JWT Authentication**: Access tokens (30min) and refresh tokens (7 days) with rotation
+- **Password Security**: bcrypt hashing with configurable cost factor (default: 12 rounds)
+- **Role-Based Access Control (RBAC)**: Fine-grained permissions per role
+- **Input Validation**: Pydantic schemas with size limits (10MB request, 10K string max)
+- **SQL Injection Protection**: SQLAlchemy ORM with parameterized queries
+- **CORS Configuration**: Configurable allowed origins
+- **Rate Limiting**: Configurable per endpoint (default: 100/min, 10/min for auth)
+- **API Docs Protection**: Disabled in production by default
+- **Security Linting**: Bandit integration for vulnerability scanning
+
+See [Security Documentation](docs/SECURITY.md) for detailed security guidelines and database user requirements.
 
 ## 📊 Observability Features
 

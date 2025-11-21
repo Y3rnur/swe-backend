@@ -185,6 +185,16 @@ switch ($Command.ToLower()) {
         Invoke-CommandSafe "[*] Running type checker..." "mypy app"
     }
 
+    "security" {
+        Write-Host "[*] Running security linting..." -ForegroundColor Cyan
+        bandit -r app -f json -o bandit-report.json
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[WARNING] Security issues found. See bandit-report.json for details." -ForegroundColor Yellow
+        }
+        bandit -r app -ll
+        Write-Host "[OK] Security check complete! See bandit-report.json for details." -ForegroundColor Green
+    }
+
     "check" {
         Write-Host "[*] Running all checks..." -ForegroundColor Green
         Write-Host ""
@@ -217,8 +227,13 @@ switch ($Command.ToLower()) {
         mypy app
         if ($LASTEXITCODE -ne 0) { $failed = $true }
 
+        # Security check
+        Write-Host "6. Running security linting..." -ForegroundColor Cyan
+        bandit -r app -ll
+        if ($LASTEXITCODE -ne 0) { $failed = $true }
+
         # Tests
-        Write-Host "6. Running tests..." -ForegroundColor Cyan
+        Write-Host "7. Running tests..." -ForegroundColor Cyan
         pytest
         if ($LASTEXITCODE -ne 0) { $failed = $true }
 
