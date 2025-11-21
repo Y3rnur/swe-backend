@@ -69,12 +69,38 @@ A production-ready FastAPI backend for a B2B supplier-wholesale exchange platfor
 ## 📋 Prerequisites
 
 - Python 3.13.5 or higher
-- PostgreSQL database
+- PostgreSQL database (running locally or via Docker)
 - pip (Python package manager)
+- Make (optional, for convenience commands - Windows users can use WSL, Git Bash, or manual commands)
 
-## 🏃 Quick Start
+## 🏃 Quick Start (Fresh Start in ≤10 Minutes)
 
-### 1. Clone and Setup
+Get the API running locally from scratch:
+
+### Option 1: Using Make (Recommended for Linux/Mac/WSL)
+
+```bash
+# 1. Create virtual environment and install dependencies
+make install
+
+# 2. Setup environment file
+make setup-env
+
+# 3. Run database migrations
+make upgrade
+
+# 4. Seed database with sample data
+make seed
+
+# 5. Start development server
+make dev
+```
+
+**Note:** On Windows (without WSL), use the manual commands below or Git Bash.
+
+### Option 2: Manual Setup
+
+#### 1. Clone and Setup
 
 ```bash
 # Create virtual environment
@@ -92,33 +118,56 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Configure Environment
+#### 2. Configure Environment
 
 ```bash
 # Copy example environment file
 cp env.example .env
 
 # Edit .env with your settings:
-# - DATABASE_URL: PostgreSQL connection string
+# - DATABASE_URL: PostgreSQL connection string (default: postgresql+asyncpg://postgres:2148@localhost:5432/postgres)
 # - SECRET_KEY: JWT secret key (change in production!)
 # - Other settings as needed
 ```
 
-### 3. Database Setup
+#### 3. Database Setup
 
 ```bash
 # Run migrations
 python -m alembic upgrade head
+
+# Seed database with sample data
+python scripts/seed.py
 ```
 
-### 4. Start Server
+#### 4. Start Server
 
 ```bash
 # Development mode (with hot reload)
 python -m uvicorn app.main:app --reload
 ```
 
-**Server:** http://localhost:8000 **API Docs:** http://localhost:8000/docs **ReDoc:** http://localhost:8000/redoc
+**Server:** http://localhost:8000
+**API Docs:** http://localhost:8000/docs
+**ReDoc:** http://localhost:8000/redoc
+
+### 🧪 Test Credentials (After Seeding)
+
+After running `make seed` or `python scripts/seed.py`, you can log in with:
+
+- **Supplier Owner:** `supplier.owner@example.com` / `Password123`
+- **Supplier Manager:** `supplier.manager@example.com` / `Password123`
+- **Supplier Sales:** `supplier.sales@example.com` / `Password123`
+- **Consumer:** `consumer@example.com` / `Password123`
+
+### 📝 Seed Data Includes
+
+- ✅ 1 Supplier: "Acme Wholesale Supplies"
+- ✅ 3 Supplier Staff: Owner, Manager, Sales Rep
+- ✅ 1 Consumer: "Retail Store Chain"
+- ✅ 3 Products: Premium, Standard, and Economy widgets
+- ✅ 1 Accepted Link: Consumer ↔ Supplier
+- ✅ 1 Sample Order: Pending order with 2 items (total: 175,000 KZT)
 
 ## 🐳 Docker
 
@@ -219,6 +268,24 @@ python -m pytest tests/test_orders_integration.py::test_create_order_as_consumer
 
 ## 🛠 Development Commands
 
+### Using Make (Recommended)
+
+```bash
+make help              # Show all available commands
+make dev               # Run development server
+make test              # Run all tests
+make lint              # Run linter
+make format            # Format code
+make type-check        # Run type checker
+make check             # Run all checks (lint, format, type-check, test)
+make seed              # Seed database with sample data
+make upgrade           # Apply database migrations
+make migrate MESSAGE="description"  # Create new migration
+make clean             # Clean cache and build files
+```
+
+### Manual Commands
+
 ```bash
 # Development server (hot reload)
 python -m uvicorn app.main:app --reload
@@ -234,12 +301,21 @@ python -m mypy app
 
 # Create migration
 python -m alembic revision --autogenerate -m "description"
+# Or using Make:
+make migrate MESSAGE="description"
 
 # Apply migrations
 python -m alembic upgrade head
+# Or using Make:
+make upgrade
 
 # Rollback migration
 python -m alembic downgrade -1
+
+# Seed database
+python scripts/seed.py
+# Or using Make:
+make seed
 ```
 
 ## 📁 Project Structure
@@ -273,6 +349,8 @@ swe-backend/
 │   ├── schemas/              # Pydantic schemas
 │   └── utils/                # Utility functions
 ├── alembic/                  # Database migrations
+├── scripts/                  # Utility scripts
+│   └── seed.py              # Database seeding script
 ├── tests/                    # Test suite
 ├── docs/                     # Documentation
 └── requirements.txt          # Python dependencies
@@ -339,7 +417,7 @@ The system includes 12 core domain models:
 
 ## 🚦 Status
 
-**Current Phase:** Phase 11 (Notifications) - ✅ Complete
+**Current Phase:** Phase 13 (Seed Data & Developer Experience) - ✅ Complete
 
 **Completed Phases:**
 
@@ -355,6 +433,8 @@ The system includes 12 core domain models:
 - ✅ Phase 9: Chat
 - ✅ Phase 10: Complaints
 - ✅ Phase 11: Notifications
+- ✅ Phase 12: Cross-Cutting Quality (Validation, Security, Performance, Error Handling, Docs)
+- ✅ Phase 13: Seed Data & Developer Experience
 
 ## 📖 Documentation
 

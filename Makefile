@@ -184,9 +184,10 @@ current-revision: ## Show current database revision
 	@echo "📍 Current database revision:"
 	alembic current
 
-seed: ## Seed database with initial data (placeholder)
-	@echo "🌱 Seed command not yet implemented"
-	@echo "TODO: Add database seeding script"
+seed: ## Seed database with initial data
+	@echo "🌱 Seeding database with initial data..."
+	@python scripts/seed.py
+	@echo "✅ Database seeded successfully!"
 
 # ==============================================================================
 # Docker Commands

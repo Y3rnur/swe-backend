@@ -272,8 +272,8 @@ switch ($Command.ToLower()) {
     }
 
     "seed" {
-        Write-Host "[!] Seed command not yet implemented" -ForegroundColor Yellow
-        Write-Host "TODO: Add database seeding script" -ForegroundColor Yellow
+        Invoke-CommandSafe "[*] Seeding database with initial data..." "python scripts/seed.py"
+        Write-Host "[OK] Database seeded successfully!" -ForegroundColor Green
     }
 
     # ==========================================================================
@@ -399,7 +399,7 @@ switch ($Command.ToLower()) {
         Write-Host "  .\scripts.ps1 revision -MESSAGE `"desc`"  Alias for migrate" -ForegroundColor White
         Write-Host "  .\scripts.ps1 upgrade            Apply all migrations" -ForegroundColor White
         Write-Host "  .\scripts.ps1 downgrade          Rollback one migration" -ForegroundColor White
-        Write-Host "  .\scripts.ps1 seed              Seed database (not implemented)" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 seed              Seed database with sample data" -ForegroundColor White
         Write-Host ""
 
         Write-Host "[*] Docker:" -ForegroundColor Yellow
