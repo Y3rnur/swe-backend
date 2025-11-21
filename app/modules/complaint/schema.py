@@ -2,13 +2,25 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.modules.complaint.model import ComplaintStatus
 
 
 class ComplaintCreate(BaseModel):
     """Complaint creation request schema."""
+
+    model_config = ConfigDict(
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "order_id": 1,
+                "sales_rep_id": 3,
+                "manager_id": 2,
+                "description": "Product arrived damaged. Need replacement or refund.",
+            }
+        },
+    )
 
     order_id: int = Field(..., description="Order ID")
     sales_rep_id: int = Field(..., description="Sales representative user ID")
@@ -21,6 +33,16 @@ class ComplaintCreate(BaseModel):
 class ComplaintStatusUpdate(BaseModel):
     """Complaint status update request schema."""
 
+    model_config = ConfigDict(
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "status": "resolved",
+                "resolution": "Replacement product shipped. Tracking number: TRACK123456",
+            }
+        },
+    )
+
     status: ComplaintStatus = Field(..., description="New complaint status")
     resolution: str | None = Field(
         None, max_length=10000, description="Resolution text (required when resolving)"
@@ -29,6 +51,24 @@ class ComplaintStatusUpdate(BaseModel):
 
 class ComplaintResponse(BaseModel):
     """Complaint response schema."""
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "order_id": 1,
+                "consumer_id": 1,
+                "sales_rep_id": 3,
+                "manager_id": 2,
+                "status": "open",
+                "description": "Product arrived damaged. Need replacement or refund.",
+                "resolution": None,
+                "created_at": "2024-01-15T10:30:00Z",
+            }
+        },
+    )
 
     id: int
     order_id: int
@@ -39,5 +79,3 @@ class ComplaintResponse(BaseModel):
     description: str
     resolution: str | None
     created_at: datetime
-
-    model_config = {"from_attributes": True}

@@ -2,6 +2,12 @@
 
 A production-ready FastAPI backend for a B2B supplier-wholesale exchange platform. This system enables suppliers to manage their catalogs, consumers to browse and order products, and provides comprehensive features for link management, order processing, chat communication, complaint handling, and notifications.
 
+## 📖 Documentation
+
+- **[Frontend Handover Guide](docs/FRONTEND_HANDOVER.md)** - Complete integration guide for frontend teams with cURL examples and end-to-end flows
+- **[Security Guide](docs/SECURITY.md)** - Security best practices, configuration, and database user requirements
+- **[Postman Collection](docs/postman_collection.json)** - Importable API collection for Postman/Insomnia with all endpoints
+
 ## 🚀 Features
 
 ### Authentication & Authorization
@@ -508,7 +514,7 @@ The system includes 12 core domain models:
 
 ## 🚦 Status
 
-**Current Phase:** Phase 16 (Observability & Ops) - ✅ Complete
+**Current Phase:** Phase 18 (Handover to Frontends) - ✅ Complete
 
 **Completed Phases:**
 
@@ -529,6 +535,8 @@ The system includes 12 core domain models:
 - ✅ Phase 14: Containerization & Local Orchestration
 - ✅ Phase 15: Automated Testing & Coverage
 - ✅ Phase 16: Observability & Ops
+- ✅ Phase 17: Security Hardening
+- ✅ Phase 18: Handover to Frontends
 
 ## 📖 Documentation
 
