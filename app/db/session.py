@@ -29,7 +29,7 @@ def receive_before_cursor_execute(
     return statement, parameters
 
 
-@event.listens_for(engine.sync_engine, "after_cursor_execute", retval=True)
+@event.listens_for(engine.sync_engine, "after_cursor_execute")
 def receive_after_cursor_execute(
     conn, _cursor, statement, _parameters, _context, _executemany
 ):
@@ -47,7 +47,6 @@ def receive_after_cursor_execute(
                     "threshold_ms": settings.SLOW_QUERY_THRESHOLD_MS,
                 },
             )
-    return statement, _parameters
 
 
 AsyncSessionLocal = async_sessionmaker(

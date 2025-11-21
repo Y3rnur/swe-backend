@@ -159,6 +159,10 @@ demo: ## Run demo script (requires API running)
 	@echo "🎬 Running demo script..."
 	@bash scripts/demo.sh
 
+check-dod: ## Run Definition of Done verification
+	@echo "🔍 Running DoD verification..."
+	@python scripts/check_dod.py
+
 pre-commit-run: ## Run pre-commit hooks on all files
 	@echo "🔍 Running pre-commit hooks..."
 	pre-commit run --all-files

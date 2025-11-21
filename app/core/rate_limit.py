@@ -1,6 +1,6 @@
 """Rate limiting utilities."""
 
-from fastapi import Request, status
+from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
@@ -12,7 +12,7 @@ from app.schemas.common import ErrorResponse
 limiter = Limiter(key_func=get_remote_address)
 
 
-def register_rate_limit_handler(app) -> None:
+def register_rate_limit_handler(app: FastAPI) -> None:
     """Register rate limit exception handler."""
     app.state.limiter = limiter
 
