@@ -64,6 +64,9 @@ pyjwt==2.10.1
 # bcrypt - Password hashing library
 bcrypt==5.0.0
 
+# slowapi - Rate limiting for FastAPI
+slowapi==0.1.9
+
 # ==============================================================================
 # Configuration & Environment
 # ==============================================================================

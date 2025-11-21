@@ -41,14 +41,30 @@ async def _get_supplier_id_for_user(user: User, db: AsyncSession) -> int | None:
 
 
 @ProductRouter.post(
-    "", response_model=ProductResponse, status_code=status.HTTP_201_CREATED
+    "",
+    response_model=ProductResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new product",
+    description="Create a new product for the authenticated supplier. SKU must be unique per supplier.",
+    responses={
+        201: {"description": "Product created successfully"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Supplier profile not found"},
+        409: {"description": "Product with this SKU already exists"},
+    },
 )
 async def create_product(
     product_data: ProductCreate,
     current_user: Annotated[User, Depends(get_current_user)],
     db: AsyncSession = Depends(get_db),
 ) -> ProductResponse:
-    """Create a product (supplier owner/manager only)."""
+    """
+    Create a product (supplier owner/manager only).
+
+    **Role Requirements:** supplier_owner, supplier_manager
+
+    **Required Scopes:** write:own_products
+    """
     # Check user is supplier owner or manager
     if current_user.role not in (
         Role.SUPPLIER_OWNER.value,
@@ -205,16 +221,28 @@ async def delete_product(
 
 
 @ProductRouter.get(
-    "", response_model=dict
-)  # Will be PaginationResponse[ProductResponse]
+    "",
+    response_model=dict,  # PaginationResponse[ProductResponse]
+    summary="List products",
+    description="Get paginated list of products with optional filters. Public endpoint (no authentication required).",
+    responses={
+        200: {"description": "Products retrieved successfully"},
+    },
+)
 async def get_products(
     supplier_id: int | None = Query(None, description="Filter by supplier ID"),
-    page: int = Query(1, ge=1, description="Page number"),
-    size: int = Query(20, ge=1, le=100, description="Page size"),
+    page: int = Query(1, ge=1, description="Page number (starts at 1)"),
+    size: int = Query(20, ge=1, le=100, description="Page size (max 100)"),
     is_active: bool | None = Query(None, description="Filter by active status"),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
-    """Get products with optional supplier filter."""
+    """
+    Get products with optional supplier filter.
+
+    **Role Requirements:** None (public endpoint)
+
+    **Pagination:** Results are paginated with max page size of 100.
+    """
     # Build query
     query = select(Product)
     if supplier_id:

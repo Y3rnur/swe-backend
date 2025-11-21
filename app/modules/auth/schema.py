@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.core.roles import Role
 
@@ -10,27 +10,75 @@ from app.core.roles import Role
 class SignupRequest(BaseModel):
     """Signup request schema."""
 
-    email: EmailStr
-    password: str = Field(..., min_length=8, max_length=100)
-    role: Literal[Role.CONSUMER, Role.SUPPLIER_OWNER]
+    model_config = ConfigDict(
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "email": "user@example.com",
+                "password": "SecurePass123",
+                "role": "consumer",
+            }
+        },
+    )
+
+    email: EmailStr = Field(..., description="User email address")
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=100,
+        description="User password (min 8 chars, must contain uppercase, lowercase, and digit)",
+    )
+    role: Literal[Role.CONSUMER, Role.SUPPLIER_OWNER] = Field(
+        ..., description="User role (consumer or supplier_owner)"
+    )
 
 
 class LoginRequest(BaseModel):
     """Login request schema."""
 
-    email: EmailStr
-    password: str
+    model_config = ConfigDict(
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "email": "user@example.com",
+                "password": "SecurePass123",
+            }
+        },
+    )
+
+    email: EmailStr = Field(..., description="User email address")
+    password: str = Field(..., description="User password")
 
 
 class RefreshRequest(BaseModel):
     """Refresh token request schema."""
 
-    refresh_token: str
+    model_config = ConfigDict(
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            }
+        },
+    )
+
+    refresh_token: str = Field(..., description="Refresh token")
 
 
 class TokenResponse(BaseModel):
     """Token response schema."""
 
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
+    model_config = ConfigDict(
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "token_type": "bearer",
+            }
+        },
+    )
+
+    access_token: str = Field(..., description="JWT access token")
+    refresh_token: str = Field(..., description="JWT refresh token")
+    token_type: str = Field(default="bearer", description="Token type")

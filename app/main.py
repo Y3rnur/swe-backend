@@ -6,12 +6,14 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.router import register_routers
 from app.core.config import settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
 from app.core.middleware import StructuredLoggingMiddleware
+from app.core.rate_limit import limiter, register_rate_limit_handler
 from app.db.session import engine
 
 setup_logging(log_level=settings.LOG_LEVEL, env=settings.ENV)
@@ -37,6 +39,50 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=settings.DESCRIPTION,
     version=settings.VERSION,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_tags=[
+        {
+            "name": "main",
+            "description": "Main application endpoints (health check, root)",
+        },
+        {
+            "name": "auth",
+            "description": "Authentication endpoints (signup, login, token refresh)",
+        },
+        {
+            "name": "products",
+            "description": "Product management endpoints. **Role requirements vary by endpoint.**",
+        },
+        {
+            "name": "orders",
+            "description": "Order management endpoints. **Role requirements vary by endpoint.**",
+        },
+        {
+            "name": "links",
+            "description": "Consumer-supplier link management endpoints",
+        },
+        {
+            "name": "chats",
+            "description": "Chat and messaging endpoints",
+        },
+        {
+            "name": "complaints",
+            "description": "Complaint management endpoints",
+        },
+        {
+            "name": "notifications",
+            "description": "Notification endpoints",
+        },
+        {
+            "name": "users",
+            "description": "User management endpoints",
+        },
+        {
+            "name": "catalog",
+            "description": "Public catalog endpoints",
+        },
+    ],
 )
 
 app.add_middleware(
@@ -49,5 +95,11 @@ app.add_middleware(
 
 app.add_middleware(StructuredLoggingMiddleware)
 
+# Rate limiting middleware (must be added after CORS)
+if settings.RATE_LIMIT_ENABLED:
+    app.state.limiter = limiter
+    app.add_middleware(SlowAPIMiddleware)
+
 register_exception_handlers(app)
+register_rate_limit_handler(app)
 register_routers(app)

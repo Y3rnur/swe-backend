@@ -3,13 +3,23 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.modules.order.model import OrderStatus
 
 
 class OrderItemCreate(BaseModel):
     """Schema for creating an order item."""
+
+    model_config = ConfigDict(
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "product_id": 1,
+                "qty": 5,
+            }
+        },
+    )
 
     product_id: int = Field(..., description="Product ID")
     qty: int = Field(..., gt=0, description="Quantity (must be positive)")
@@ -18,6 +28,19 @@ class OrderItemCreate(BaseModel):
 class OrderCreate(BaseModel):
     """Schema for creating an order."""
 
+    model_config = ConfigDict(
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "supplier_id": 1,
+                "items": [
+                    {"product_id": 1, "qty": 5},
+                    {"product_id": 2, "qty": 3},
+                ],
+            }
+        },
+    )
+
     supplier_id: int = Field(..., description="Supplier ID")
     items: list[OrderItemCreate] = Field(..., min_length=1, description="Order items")
 
@@ -25,30 +48,75 @@ class OrderCreate(BaseModel):
 class OrderStatusUpdate(BaseModel):
     """Schema for updating order status."""
 
+    model_config = ConfigDict(
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "status": "accepted",
+            }
+        },
+    )
+
     status: OrderStatus = Field(..., description="New order status")
 
 
 class OrderItemResponse(BaseModel):
     """Schema for order item response."""
 
-    id: int
-    order_id: int
-    product_id: int
-    qty: int
-    unit_price_kzt: Decimal
+    model_config = ConfigDict(
+        from_attributes=True,
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "order_id": 1,
+                "product_id": 1,
+                "qty": 5,
+                "unit_price_kzt": "15000.00",
+            }
+        },
+    )
 
-    model_config = {"from_attributes": True}
+    id: int = Field(..., description="Order item ID")
+    order_id: int = Field(..., description="Order ID")
+    product_id: int = Field(..., description="Product ID")
+    qty: int = Field(..., description="Quantity")
+    unit_price_kzt: Decimal = Field(..., description="Unit price in KZT")
 
 
 class OrderResponse(BaseModel):
     """Schema for order response."""
 
-    id: int
-    supplier_id: int
-    consumer_id: int
-    status: OrderStatus
-    total_kzt: Decimal
-    created_at: datetime
-    items: list[OrderItemResponse] = Field(default_factory=list)
+    model_config = ConfigDict(
+        from_attributes=True,
+        strict=True,
+        json_schema_extra={
+            "example": {
+                "id": 1,
+                "supplier_id": 1,
+                "consumer_id": 1,
+                "status": "pending",
+                "total_kzt": "75000.00",
+                "created_at": "2024-01-15T10:30:00Z",
+                "items": [
+                    {
+                        "id": 1,
+                        "order_id": 1,
+                        "product_id": 1,
+                        "qty": 5,
+                        "unit_price_kzt": "15000.00",
+                    }
+                ],
+            }
+        },
+    )
 
-    model_config = {"from_attributes": True}
+    id: int = Field(..., description="Order ID")
+    supplier_id: int = Field(..., description="Supplier ID")
+    consumer_id: int = Field(..., description="Consumer ID")
+    status: OrderStatus = Field(..., description="Order status")
+    total_kzt: Decimal = Field(..., description="Total amount in KZT")
+    created_at: datetime = Field(..., description="Creation timestamp")
+    items: list[OrderItemResponse] = Field(
+        default_factory=list, description="Order items"
+    )
