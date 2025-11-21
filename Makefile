@@ -151,6 +151,14 @@ ci: lint security test-cov ## Run CI-like checks (lint + security + test with co
 lint-and-test: lint security test-cov ## Run lint, security, and tests with coverage (CI-like)
 	@echo "✅ Lint, security, and test checks passed!"
 
+export-openapi: ## Export OpenAPI schema to docs/openapi.json
+	@echo "📥 Exporting OpenAPI schema..."
+	@python scripts/export_openapi.py --url http://localhost:8000 --output docs/openapi.json
+
+demo: ## Run demo script (requires API running)
+	@echo "🎬 Running demo script..."
+	@bash scripts/demo.sh
+
 pre-commit-run: ## Run pre-commit hooks on all files
 	@echo "🔍 Running pre-commit hooks..."
 	pre-commit run --all-files

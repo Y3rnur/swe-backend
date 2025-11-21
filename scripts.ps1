@@ -256,6 +256,11 @@ switch ($Command.ToLower()) {
         Invoke-CommandSafe "[*] Updating pre-commit hooks..." "pre-commit autoupdate"
     }
 
+    "export-openapi" {
+        Write-Host "[*] Exporting OpenAPI schema..." -ForegroundColor Cyan
+        python scripts/export_openapi.py --url http://localhost:8000 --output docs/openapi.json
+    }
+
     # ==========================================================================
     # Database Migrations
     # ==========================================================================
@@ -404,9 +409,13 @@ switch ($Command.ToLower()) {
         Write-Host "  .\scripts.ps1 lint              Run linter (ruff check)" -ForegroundColor White
         Write-Host "  .\scripts.ps1 lint-fix         Run linter and fix issues" -ForegroundColor White
         Write-Host "  .\scripts.ps1 type-check       Run type checker (mypy)" -ForegroundColor White
-        Write-Host "  .\scripts.ps1 check            Run all checks (format, lint, type, test)" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 security         Run security linting (bandit)" -ForegroundColor White
+        Write-Host "  .\scripts.ps1 check            Run all checks (format, lint, type, security, test)" -ForegroundColor White
         Write-Host "  .\scripts.ps1 pre-commit-run    Run pre-commit hooks on all files" -ForegroundColor White
         Write-Host "  .\scripts.ps1 pre-commit-update  Update pre-commit hooks" -ForegroundColor White
+        Write-Host ""
+        Write-Host "[*] Documentation:" -ForegroundColor Yellow
+        Write-Host "  .\scripts.ps1 export-openapi   Export OpenAPI schema to docs/openapi.json" -ForegroundColor White
         Write-Host ""
 
         Write-Host "[*] Database:" -ForegroundColor Yellow

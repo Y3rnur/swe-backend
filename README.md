@@ -4,9 +4,13 @@ A production-ready FastAPI backend for a B2B supplier-wholesale exchange platfor
 
 ## 📖 Documentation
 
+- **[Submission Guide](docs/SUBMISSION_GUIDE.md)** - Step-by-step guide for instructors to run and evaluate the API
+- **[Module Documentation](docs/MODULES.md)** - Comprehensive overview of each module (purpose, endpoints, data models)
+- **[Report Guide](docs/REPORT_GUIDE.md)** - Guide for generating report materials, screenshots, and documentation
 - **[Frontend Handover Guide](docs/FRONTEND_HANDOVER.md)** - Complete integration guide for frontend teams with cURL examples and end-to-end flows
 - **[Security Guide](docs/SECURITY.md)** - Security best practices, configuration, and database user requirements
 - **[Postman Collection](docs/postman_collection.json)** - Importable API collection for Postman/Insomnia with all endpoints
+- **[OpenAPI Schema](docs/openapi.json)** - Exported OpenAPI 3.0 schema (run `make export-openapi` to update)
 
 ## 🚀 Features
 
@@ -537,6 +541,7 @@ The system includes 12 core domain models:
 - ✅ Phase 16: Observability & Ops
 - ✅ Phase 17: Security Hardening
 - ✅ Phase 18: Handover to Frontends
+- ✅ Phase 19: Finalization for Submission
 
 ## 📖 Documentation
 
