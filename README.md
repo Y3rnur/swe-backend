@@ -297,12 +297,18 @@ All endpoints are prefixed with `/api/v1`.
 
 ## 🧪 Testing
 
+### Running Tests
+
 ```bash
 # Run all tests
+make test
+# or
 python -m pytest
 
-# Run with coverage
-python -m pytest --cov=app --cov-report=html
+# Run with coverage (minimum 70%)
+make test-cov
+# or
+python -m pytest --cov=app --cov-report=html --cov-fail-under=70
 
 # Run specific test file
 python -m pytest tests/test_auth_integration.py
@@ -310,11 +316,28 @@ python -m pytest tests/test_auth_integration.py
 # Run with verbose output
 python -m pytest -v
 
-# Run with specific test
+# Run specific test
 python -m pytest tests/test_orders_integration.py::test_create_order_as_consumer -xvs
+
+# Run CI-like checks (lint + test with coverage)
+make lint-and-test
 ```
 
-**Test Coverage:** 117+ integration and unit tests covering all endpoints and business logic.
+### Test Coverage
+
+- **Target:** Minimum 70% line coverage
+- **Current:** 150+ integration and unit tests covering:
+  - All API endpoints (auth, RBAC, links, products, orders, chat, complaints, notifications)
+  - State machine transitions (order, link, complaint status)
+  - Access rules and RBAC permissions
+  - Business logic and validation
+
+### Test Structure
+
+- **Fixtures** (`tests/fixtures.py`): Comprehensive fixtures for users, roles, and sample data
+- **State Machines** (`tests/test_state_machines.py`): Tests for all state transitions
+- **Access Rules** (`tests/test_access_rules.py`): Tests for RBAC and permission checks
+- **Integration Tests**: Full API endpoint tests with database
 
 ## 🛠 Development Commands
 
@@ -467,7 +490,7 @@ The system includes 12 core domain models:
 
 ## 🚦 Status
 
-**Current Phase:** Phase 14 (Containerization & Local Orchestration) - ✅ Complete
+**Current Phase:** Phase 15 (Automated Testing & Coverage) - ✅ Complete
 
 **Completed Phases:**
 
@@ -486,6 +509,7 @@ The system includes 12 core domain models:
 - ✅ Phase 12: Cross-Cutting Quality (Validation, Security, Performance, Error Handling, Docs)
 - ✅ Phase 13: Seed Data & Developer Experience
 - ✅ Phase 14: Containerization & Local Orchestration
+- ✅ Phase 15: Automated Testing & Coverage
 
 ## 📖 Documentation
 

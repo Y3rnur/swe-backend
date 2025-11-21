@@ -91,3 +91,28 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
 
     # Cleanup: remove dependency overrides after test
     app.dependency_overrides.clear()
+
+
+# Import all fixtures from fixtures module
+# This makes them available to all tests
+from tests.fixtures import (  # noqa: E402, F401
+    accepted_link,
+    auth_headers_consumer,
+    auth_headers_supplier_manager,
+    auth_headers_supplier_owner,
+    auth_headers_supplier_sales,
+    chat_session,
+    complaint,
+    consumer,
+    consumer_user,
+    notification,
+    order,
+    pending_link,
+    product,
+    supplier,
+    supplier_manager_staff,
+    supplier_manager_user,
+    supplier_owner_user,
+    supplier_sales_staff,
+    supplier_sales_user,
+)

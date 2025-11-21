@@ -95,9 +95,9 @@ test: ## Run all tests
 	@echo "🧪 Running tests..."
 	pytest
 
-test-cov: ## Run tests with coverage report
+test-cov: ## Run tests with coverage report (minimum 70%)
 	@echo "🧪 Running tests with coverage..."
-	pytest --cov=app --cov=tests --cov-report=html --cov-report=term-missing --cov-report=xml
+	pytest --cov=app --cov-report=html --cov-report=term-missing --cov-report=xml --cov-fail-under=70
 	@echo "📊 Coverage report generated in htmlcov/index.html"
 
 test-watch: ## Run tests in watch mode (requires pytest-watch)
@@ -107,6 +107,9 @@ test-watch: ## Run tests in watch mode (requires pytest-watch)
 test-fast: ## Run tests without coverage (faster)
 	@echo "⚡ Running tests (fast mode)..."
 	pytest --no-cov
+
+test-ci: lint test-cov ## Run lint and tests with coverage (CI-like)
+	@echo "✅ All checks passed!"
 
 # ==============================================================================
 # Code Quality
@@ -134,6 +137,13 @@ type-check: ## Run type checker (mypy)
 
 check: lint lint-fix format-check format type-check test ## Run all checks (lint, type-check, test)
 	@echo "✅ All checks passed!"
+
+ci: lint test-cov ## Run CI-like checks (lint + test with coverage)
+	@echo "✅ CI checks passed!"
+
+# Combined command for CI/CD pipeline
+lint-and-test: lint test-cov ## Run lint and tests with coverage (CI-like)
+	@echo "✅ Lint and test checks passed!"
 
 pre-commit-run: ## Run pre-commit hooks on all files
 	@echo "🔍 Running pre-commit hooks..."

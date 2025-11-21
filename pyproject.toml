@@ -266,3 +266,46 @@ minversion = "9.0"
 unit = "Unit tests (fast, isolated)"
 integration = "Integration tests (may require database)"
 slow = "Slow running tests (may take longer to execute)"
+
+# ==============================================================================
+# Coverage Configuration
+# ==============================================================================
+# Coverage settings for pytest-cov
+# Documentation: https://pytest-cov.readthedocs.io/
+
+[tool.coverage.run]
+# Directories to include in coverage
+source = ["app"]
+# Directories to omit from coverage
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/alembic/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+# Branch coverage (track which branch outcomes were tested)
+branch = true
+
+[tool.coverage.report]
+# Minimum coverage percentage (70% as specified)
+fail_under = 70
+# Show missing line numbers
+show_missing = true
+# Skip empty files
+skip_empty = true
+# Precision for percentages
+precision = 2
+
+# Exclude lines from coverage
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
