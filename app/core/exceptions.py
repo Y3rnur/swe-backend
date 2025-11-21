@@ -21,9 +21,11 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(  # pyright: ignore[reportUnusedFunction]
-        _request: Request, exc: RequestValidationError
+        request: Request, exc: RequestValidationError
     ) -> JSONResponse:
         """Handle Pydantic validation errors."""
+        correlation_id = getattr(request.state, "correlation_id", None)
+
         errors = exc.errors()
         # Format errors for better readability
         formatted_errors: list[dict[str, Any]] = []
@@ -35,6 +37,16 @@ def register_exception_handlers(app: FastAPI) -> None:
                     "type": error["type"],
                 }
             )
+
+        logger.warning(
+            "Validation error",
+            extra={
+                "correlation_id": correlation_id,
+                "path": request.url.path,
+                "method": request.method,
+                "errors": formatted_errors,
+            },
+        )
 
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -74,10 +86,22 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(IntegrityError)
     async def integrity_error_handler(  # pyright: ignore[reportUnusedFunction]
-        _request: Request, exc: IntegrityError
+        request: Request, exc: IntegrityError
     ) -> JSONResponse:
         """Handle database integrity errors (unique constraints, foreign keys, etc.)."""
-        logger.warning(f"Integrity error: {exc}", exc_info=True)
+        correlation_id = getattr(request.state, "correlation_id", None)
+
+        logger.warning(
+            "Integrity error",
+            exc_info=True,  # Include stack trace
+            extra={
+                "correlation_id": correlation_id,
+                "path": request.url.path,
+                "method": request.method,
+                "error": str(exc),
+                "error_type": type(exc).__name__,
+            },
+        )
 
         # Try to extract meaningful error message
         error_msg = str(exc.orig) if hasattr(exc, "orig") else str(exc)
@@ -103,10 +127,22 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(SQLAlchemyError)
     async def sqlalchemy_error_handler(  # pyright: ignore[reportUnusedFunction]
-        _request: Request, exc: SQLAlchemyError
+        request: Request, exc: SQLAlchemyError
     ) -> JSONResponse:
-        """Handle SQLAlchemy database errors."""
-        logger.error(f"Database error: {exc}", exc_info=True)
+        """Handle SQLAlchemy database errors with structured logging."""
+        correlation_id = getattr(request.state, "correlation_id", None)
+
+        logger.error(
+            "Database error",
+            exc_info=True,  # Include full stack trace
+            extra={
+                "correlation_id": correlation_id,
+                "path": request.url.path,
+                "method": request.method,
+                "error": str(exc),
+                "error_type": type(exc).__name__,
+            },
+        )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content=ErrorResponse(
@@ -117,9 +153,11 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(  # pyright: ignore[reportUnusedFunction]
-        _request: Request, exc: StarletteHTTPException
+        request: Request, exc: StarletteHTTPException
     ) -> JSONResponse:
         """Handle HTTP exceptions with standardized format."""
+        correlation_id = getattr(request.state, "correlation_id", None)
+
         # Map common status codes to error codes
         status_code_map = {
             status.HTTP_400_BAD_REQUEST: "BAD_REQUEST",
@@ -132,6 +170,21 @@ def register_exception_handlers(app: FastAPI) -> None:
 
         error_code = status_code_map.get(exc.status_code, f"HTTP_{exc.status_code}")
 
+        # Log 4xx and 5xx errors with correlation ID
+        if exc.status_code >= 400:
+            log_level = logging.WARNING if exc.status_code < 500 else logging.ERROR
+            logger.log(
+                log_level,
+                "HTTP exception",
+                extra={
+                    "correlation_id": correlation_id,
+                    "path": request.url.path,
+                    "method": request.method,
+                    "status_code": exc.status_code,
+                    "error_code": error_code,
+                },
+            )
+
         return JSONResponse(
             status_code=exc.status_code,
             content=ErrorResponse(
@@ -142,13 +195,23 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def general_exception_handler(  # pyright: ignore[reportUnusedFunction]
-        _request: Request, exc: Exception
+        request: Request, exc: Exception
     ) -> JSONResponse:
-        """Handle all other unhandled exceptions."""
+        """Handle all other unhandled exceptions with structured logging."""
+        # Get correlation ID from request state if available
+        correlation_id = getattr(request.state, "correlation_id", None)
+
         logger.error(
-            f"Unhandled exception: {type(exc).__name__}: {exc}",
-            exc_info=True,
-            extra={"path": _request.url.path, "method": _request.method},
+            "Unhandled exception",
+            exc_info=True,  # Include full stack trace
+            extra={
+                "correlation_id": correlation_id,
+                "path": request.url.path,
+                "method": request.method,
+                "error": str(exc),
+                "error_type": type(exc).__name__,
+                "client_ip": request.client.host if request.client else None,
+            },
         )
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

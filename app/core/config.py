@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     PASSWORD_REQUIRE_DIGIT: bool = True
     PASSWORD_REQUIRE_SPECIAL: bool = False  # Optional for now
 
+    # Observability
+    SLOW_QUERY_THRESHOLD_MS: int = 1000  # Log queries slower than this (milliseconds)
+    HEALTH_CHECK_TIMEOUT_SECONDS: float = 5.0  # Timeout for DB health check
+
     @model_validator(mode="before")
     @classmethod
     def parse_cors_origins(

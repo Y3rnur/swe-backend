@@ -209,8 +209,11 @@ After starting services, verify the health endpoint:
 # Check health endpoint
 curl http://localhost:8000/health
 
-# Expected response:
-# {"status":"ok","env":"dev"}
+# Expected response (when DB is healthy):
+# {"status":"ok","env":"dev","db":"ok"}
+
+# Expected response (when DB is down):
+# {"status":"degraded","env":"dev","db":"error"}
 ```
 
 ### Running Migrations
@@ -293,7 +296,9 @@ All endpoints are prefixed with `/api/v1`.
 
 ### Health
 
-- `GET /health` - Health check endpoint
+- `GET /health` - Health check endpoint with database status
+  - Returns: `{"status": "ok"|"degraded", "env": "...", "db": "ok"|"error"}`
+  - Includes `X-Correlation-ID` header for request tracking
 
 ## 🧪 Testing
 
@@ -470,6 +475,16 @@ swe-backend/
 - SQL injection protection (SQLAlchemy ORM)
 - CORS configuration
 - Environment-based configuration
+- Rate limiting (configurable per endpoint)
+
+## 📊 Observability Features
+
+- **Request Logging**: Structured logging with correlation IDs
+- **Error Logging**: Full stack traces in structured JSON format
+- **Slow Query Logging**: Automatic detection and logging of slow database queries (>1s default)
+- **Health Checks**: `/health` endpoint with database status
+- **Correlation IDs**: Track requests across services via `X-Correlation-ID` header
+- **Structured Logs**: JSON-formatted logs in production for easy parsing
 
 ## 📊 Database Models
 
@@ -490,7 +505,7 @@ The system includes 12 core domain models:
 
 ## 🚦 Status
 
-**Current Phase:** Phase 15 (Automated Testing & Coverage) - ✅ Complete
+**Current Phase:** Phase 16 (Observability & Ops) - ✅ Complete
 
 **Completed Phases:**
 
@@ -510,6 +525,7 @@ The system includes 12 core domain models:
 - ✅ Phase 13: Seed Data & Developer Experience
 - ✅ Phase 14: Containerization & Local Orchestration
 - ✅ Phase 15: Automated Testing & Coverage
+- ✅ Phase 16: Observability & Ops
 
 ## 📖 Documentation
 

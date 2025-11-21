@@ -14,12 +14,14 @@ class HealthCheckResponse(BaseModel):
             "example": {
                 "status": "ok",
                 "env": "dev",
+                "db": "ok",
             }
         },
     )
 
-    status: str = Field(..., description="Health status")
+    status: str = Field(..., description="Overall health status (ok, degraded)")
     env: str = Field(..., description="Environment name")
+    db: str = Field(..., description="Database health status (ok, error)")
 
 
 class MessageResponse(BaseModel):
