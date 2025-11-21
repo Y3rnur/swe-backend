@@ -106,7 +106,7 @@ EXPOSE 8000
 # This allows Docker to monitor the container's health
 # The endpoint should return 200 OK if the service is healthy
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/api/v1/health || exit 1
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # Default command to run the application
 # Using uvicorn as the ASGI server
@@ -116,16 +116,25 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # ==============================================================================
-# Development Stage (Optional)
+# Development Stage
 # ==============================================================================
-# Uncomment the section below to create a development image with hot reload
-# This stage includes development dependencies and mounts code as volumes
+# This stage is used for development with hot reload
+# It includes development dependencies and runs with --reload flag
+FROM runtime AS development
 
-# FROM runtime AS development
-# USER root
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     git \
-#     vim \
-#     && rm -rf /var/lib/apt/lists/*
-# USER appuser
-# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Switch to root to install additional dev tools
+USER root
+
+# Install development tools (optional, for debugging)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Switch back to appuser
+USER appuser
+
+# Development command with hot reload enabled
+# --reload: Enable auto-reload on code changes
+# --reload-dir: Watch specific directories (optional, defaults to current directory)
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

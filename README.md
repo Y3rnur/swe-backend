@@ -171,15 +171,65 @@ After running `make seed` or `python scripts/seed.py`, you can log in with:
 
 ## 🐳 Docker
 
+### Quick Start with Docker Compose
+
 ```bash
-# Start services (database + app)
-docker-compose up -d
+# Start services (database + app) with hot reload
+docker compose up
+
+# Or start in detached mode
+docker compose up -d
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
+
+# View logs for specific service
+docker compose logs -f app
+docker compose logs -f db
 
 # Stop services
-docker-compose down
+docker compose down
+
+# Stop and remove volumes (⚠️ deletes database data)
+docker compose down -v
+```
+
+### Features
+
+- **Hot Reload**: Code changes automatically trigger server reload
+- **Health Checks**: Both services have health checks configured
+- **Persistent Data**: Database data persists in named volumes
+- **Development Ready**: Pre-configured for local development
+
+### Verify Setup
+
+After starting services, verify the health endpoint:
+
+```bash
+# Check health endpoint
+curl http://localhost:8000/health
+
+# Expected response:
+# {"status":"ok","env":"dev"}
+```
+
+### Running Migrations
+
+Migrations run automatically on container startup. To run manually:
+
+```bash
+# Run migrations
+docker compose exec app alembic upgrade head
+
+# Create new migration
+docker compose exec app alembic revision --autogenerate -m "description"
+```
+
+### Seeding Database
+
+```bash
+# Seed database with sample data
+docker compose exec app python scripts/seed.py
 ```
 
 ## 📚 API Endpoints
@@ -417,7 +467,7 @@ The system includes 12 core domain models:
 
 ## 🚦 Status
 
-**Current Phase:** Phase 13 (Seed Data & Developer Experience) - ✅ Complete
+**Current Phase:** Phase 14 (Containerization & Local Orchestration) - ✅ Complete
 
 **Completed Phases:**
 
@@ -435,6 +485,7 @@ The system includes 12 core domain models:
 - ✅ Phase 11: Notifications
 - ✅ Phase 12: Cross-Cutting Quality (Validation, Security, Performance, Error Handling, Docs)
 - ✅ Phase 13: Seed Data & Developer Experience
+- ✅ Phase 14: Containerization & Local Orchestration
 
 ## 📖 Documentation
 
